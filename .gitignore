@@ -1,0 +1,43 @@
+# Elisp byte code
+*.elc
+
+# Emacs visited backup files
+*~
+
+# Installed packages
+/elpa/
+/.cask/
+/vendor/ProofGeneral*
+
+# Recovery and backup directories
+/auto-save-list/
+/.backup/
+
+# Cache files and settings for packages
+/.python-environments
+/anaconda-mode
+/ac-comphist.dat
+/tutorial/
+/.mc-lists.el
+/smex-items
+/bookmarks
+/history
+/ido.last*
+/places
+/projectile-bookmarks.eld
+/projectile.cache
+/recentf
+/semanticdb/
+/session.*
+/tramp
+/tramp-auto-save
+/url/
+/var/
+/abbrev_defs
+/cider-repl-history
+/eww-bookmarks
+/.sx
+/ensime/
+/company-statistics-cache.el
+/eshell/
+/network-security.data
