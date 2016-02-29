@@ -78,6 +78,11 @@
 ;; +++
 ;; Deffered
 
+;; Subword -- allows to move on sub-word in CamelCase
+(use-package subword
+  :defer t
+  :diminish subword-mode)
+
 ;; ++
 ;; Python
 
@@ -87,7 +92,6 @@
   :config
   (progn
     (add-hook 'python-mode-hook 'subword-mode)
-    (add-hook 'python-mode-hook '(diminish 'subword-mode))
     (add-hook 'python-mode-hook
     	      (lambda () (set (make-local-variable
     			       'comment-inline-offset) 2)))
