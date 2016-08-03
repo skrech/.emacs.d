@@ -18,7 +18,10 @@
 (setq column-number-mode t)           ; show column number in modeline
 (global-linum-mode t)                 ; display line numbers
 (setq scroll-conservatively 10000)    ; allow to scrol line-by-line
-(ido-mode t)                          ; enabe IDO mode
+
+(ido-mode t)                          ; enable IDO mode
+(ido-everywhere)		      ; enable IDO everywhere (?)
+
 (add-hook 'before-save-hook
 	  'delete-trailing-whitespace)	       ; delete whitespaces
 (put 'dired-find-alternate-file 'disabled nil) ; reuse dired buffers
@@ -50,6 +53,11 @@
 (use-package smex
  :ensure t
  :bind ("M-x" . smex))
+
+;; IDO Ubiquitous
+(use-package ido-ubiquitous
+  :ensure t
+  :init (ido-ubiquitous-mode))
 
 ;; Which key
 (use-package which-key
