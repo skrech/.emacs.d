@@ -19,8 +19,8 @@
 (global-linum-mode t)                 ; display line numbers
 (setq scroll-conservatively 10000)    ; allow to scrol line-by-line
 
-(ido-mode t)                          ; enable IDO mode
-(ido-everywhere)		      ; enable IDO everywhere (?)
+;; (ido-mode t)                          ; enable IDO mode
+;; (ido-everywhere)		      ; enable IDO everywhere (?)
 
 (add-hook 'before-save-hook
 	  'delete-trailing-whitespace)	       ; delete whitespaces
@@ -49,15 +49,35 @@
 ;; +++
 ;; Always-on
 
+;; Helm
+(use-package helm
+  :ensure t
+  :init
+  (require 'helm-config)		; adds C-x c prefix
+  (helm-mode 1)				; start helm mode
+
+  :bind (("M-x" . helm-M-x)
+	 ("C-x C-f" . helm-find-files)
+	 ("C-x C-b" . helm-buffers-list)
+
+	 :map helm-map
+	 ("<tab>" . helm-execute-persistent-action) ; swap <tab> and C-z
+	 ("C-z" . helm-select-action))
+
+  :config
+  (setq helm-split-window-in-side-p t) ; helm window in current window
+  (setq helm-ff-skip-boring-files t)   ; don't show eg. temp files and vc
+)
+
 ;; Smex
-(use-package smex
- :ensure t
- :bind ("M-x" . smex))
+;; (use-package smex
+;;  :ensure t
+;;  :bind ("M-x" . smex))
 
 ;; IDO Ubiquitous
-(use-package ido-ubiquitous
-  :ensure t
-  :init (ido-ubiquitous-mode))
+;; (use-package ido-ubiquitous
+;;   :ensure t
+;;   :init (ido-ubiquitous-mode))
 
 ;; Which key
 (use-package which-key
@@ -85,12 +105,6 @@
 
 ;; +++
 ;; Deffered
-
-;; Helm
-(use-package helm
-  :ensure t
-  :defer t
-  :init (require 'helm-config))	; this require only adds "C-x c" prefix
 
 ;; Subword -- allows to move on sub-word in CamelCase
 (use-package subword
