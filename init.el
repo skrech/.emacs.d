@@ -59,6 +59,8 @@
   :bind (("M-x" . helm-M-x)
 	 ("C-x C-f" . helm-find-files)
 	 ("C-x C-b" . helm-buffers-list)
+	 ("C-x b" . helm-mini)
+	 ("M-y" . helm-show-kill-ring)
 
 	 :map helm-map
 	 ("<tab>" . helm-execute-persistent-action) ; swap <tab> and C-z
@@ -67,7 +69,7 @@
   :config
   (setq helm-split-window-in-side-p t) ; helm window in current window
   (setq helm-ff-skip-boring-files t)   ; don't show eg. temp files and vc
-)
+  :diminish helm-mode)
 
 ;; Smex
 ;; (use-package smex
@@ -109,7 +111,7 @@
 ;; Subword -- allows to move on sub-word in CamelCase
 (use-package subword
   :defer t
-  :diminish subword-mode)
+  :diminish (subword-mode . " ⓒ"))
 
 ;; ++
 ;; Python
