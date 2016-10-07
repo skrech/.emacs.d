@@ -158,4 +158,8 @@
 (when (or (eq system-type 'windows-nt) (eq system-type 'msdos))
   (setenv "PATH" (concat "C:\\MinGW\\msys\\1.0\\bin;" (getenv "PATH"))))
 
+;; Append Homebrew bin dir to exec-path on OSX
+(when (eq system-type 'darwin)
+  (setq exec-path (append '("/usr/local/bin") exec-path)))
+
 ;;; init.el ends here
