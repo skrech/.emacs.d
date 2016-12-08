@@ -61,6 +61,7 @@
 	 ("C-x C-b" . helm-buffers-list)
 	 ("C-x b" . helm-mini)
 	 ("M-y" . helm-show-kill-ring)
+	 ("M-s o" . helm-occur)
 
 	 :map helm-map
 	 ("<tab>" . helm-execute-persistent-action) ; swap <tab> and C-z
@@ -119,6 +120,9 @@
 ;; Python mode
 (use-package python
   :defer t
+  :init
+  (eval-after-load "semantic"
+    (remove-hook 'python-mode-hook 'wisent-python-default-setup)) ; workaround an imenu bug in emacs24.5
   :config
   (progn
     (add-hook 'python-mode-hook 'subword-mode)
