@@ -119,20 +119,20 @@
 
 ;; Python mode
 (use-package python
-  :defer t
   :init
-  (eval-after-load "semantic"
-    (remove-hook 'python-mode-hook 'wisent-python-default-setup)) ; workaround an imenu bug in emacs24.5
-  :config
   (progn
     (add-hook 'python-mode-hook 'subword-mode)
     (add-hook 'python-mode-hook
     	      (lambda () (set (make-local-variable
     			       'comment-inline-offset) 2)))
-    (add-hook 'python-mode-hook (lambda() (setq fill-column 79)))
+    (add-hook 'python-mode-hook (lambda () (setq fill-column 79)))
     )
   )
 
+;; WORKAROUND: for imenu bug in emacs 24.5. Remove after update!
+(use-package semantic
+  :config (remove-hook 'python-mode-hook 'wisent-python-default-setup)
+  )
 
 ;; Anaconda-mode
 (use-package anaconda-mode
