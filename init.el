@@ -158,6 +158,9 @@
 ;; ----
 ;; Misc
 
+;; Prevent accidental exiting
+(setq confirm-kill-emacs 'y-or-n-p)
+
 ;; Append MinGW to PATH on Windows
 (when (or (eq system-type 'windows-nt) (eq system-type 'msdos))
   (setenv "PATH" (concat "C:\\MinGW\\msys\\1.0\\bin;" (getenv "PATH"))))
