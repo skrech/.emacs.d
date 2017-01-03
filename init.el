@@ -130,9 +130,9 @@
   )
 
 ;; WORKAROUND: for imenu bug in emacs 24.5. Remove after update!
-(use-package semantic
-  :config (remove-hook 'python-mode-hook 'wisent-python-default-setup)
-  )
+;; (use-package semantic
+;;   :config (remove-hook 'python-mode-hook 'wisent-python-default-setup)
+;;   )
 
 ;; Anaconda-mode
 (use-package anaconda-mode
@@ -157,6 +157,13 @@
 
 ;; ----
 ;; Misc
+
+;; Email config
+(setq send-mail-function    'smtpmail-send-it
+      user-mail-address     "skrechy@gmail.com"
+      smtpmail-smtp-server  "smtp.gmail.com"
+      smtpmail-stream-type  'ssl
+      smtpmail-smtp-service 465)
 
 ;; Prevent accidental exiting
 (setq confirm-kill-emacs 'y-or-n-p)
