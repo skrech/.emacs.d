@@ -49,6 +49,12 @@
 ;; +++
 ;; Always-on
 
+;; Theme
+(use-package zenburn-theme
+  :ensure t
+  :init
+  (load-theme 'zenburn t))
+
 ;; Helm
 (use-package helm
   :ensure t
