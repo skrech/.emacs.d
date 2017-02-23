@@ -25,7 +25,7 @@
 (add-hook 'before-save-hook
 	  'delete-trailing-whitespace)	       ; delete whitespaces
 (put 'dired-find-alternate-file 'disabled nil) ; reuse dired buffers
-(which-function-mode 1)		      ; shows current function name
+(which-function-mode t)		      ; shows current function name
 (defalias 'yes-or-no-p 'y-or-n-p)     ; don't ask newbie questions
 
 ;; Keys for built-in
@@ -49,11 +49,14 @@
 ;; +++
 ;; Always-on
 
-;; Theme
+;; Themes
 (use-package zenburn-theme
+  :ensure t)
+
+(use-package color-theme-sanityinc-tomorrow
   :ensure t
   :init
-  (load-theme 'zenburn t))
+  (load-theme 'sanityinc-tomorrow-eighties t))
 
 ;; Helm
 (use-package helm
@@ -174,10 +177,17 @@
 ;; Prevent accidental exiting
 (setq confirm-kill-emacs 'y-or-n-p)
 
+;; find-grep-dired to not recurse in .svn folder
+;; TODO: make it more general
+(setq find-grep-options "-Iq --exclude=\"*\\.svn*\"")
+
 ;; Append MinGW to PATH on Windows
 (when (or (eq system-type 'windows-nt) (eq system-type 'msdos))
   (setenv "PATH" (concat "C:\\MinGW\\msys\\1.0\\bin;" (getenv "PATH")))
-  (setq exec-path (append '("C:\\MinGW\\msys\\1.0\\bin") exec-path)))
+  (setq exec-path (append '("C:\\MinGW\\msys\\1.0\\bin") exec-path))
+
+  ;; Fix 'find' listing on Windows
+  (setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))
 
 ;; Append Homebrew bin dir to exec-path on OSX
 (when (eq system-type 'darwin)
