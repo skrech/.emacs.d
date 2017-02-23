@@ -147,7 +147,10 @@
 (use-package anaconda-mode
   :ensure t
   :defer t
-  :init (add-hook 'python-mode-hook 'anaconda-mode)
+  :init
+  (progn
+    (add-hook 'python-mode-hook 'anaconda-mode)
+    (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
   :diminish anaconda-mode)
 
 ;; Anacoda company backend
