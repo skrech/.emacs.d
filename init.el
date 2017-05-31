@@ -81,6 +81,21 @@
   (setq helm-ff-skip-boring-files t)   ; don't show eg. temp files and vc
   :diminish helm-mode)
 
+;; Projectile
+(use-package projectile
+  :ensure t
+  :init (projectile-mode)
+  :config
+  (setq projectile-globally-ignored-directories
+	(append '("__pycache__")
+		projectile-globally-ignored-directories)))
+
+;; Helm-Projectile
+(use-package helm-projectile
+  :ensure t
+  :if (and (featurep 'helm) (featurep 'projectile))
+  :init (helm-projectile-on))
+
 ;; Smex
 ;; (use-package smex
 ;;  :ensure t
@@ -95,19 +110,18 @@
 (use-package which-key
   :ensure t
   :init (which-key-mode)
-  :diminish (which-key-mode . " Ⓚ"))
+  :diminish which-key-mode)
 
 ;; Company-mode
 (use-package company
   :ensure t
   :init (global-company-mode)
-  :diminish (company-mode . " ⓐ"))
+  :diminish (company-mode . " Comp"))
 
 ;; Flycheck
 (use-package flycheck
   :ensure t
-  :init (global-flycheck-mode)
-  :diminish (flycheck-mode . " Ⓢ"))
+  :init (global-flycheck-mode))
 
 ;; Flycheck pos-tip
 (use-package flycheck-pos-tip
@@ -120,8 +134,7 @@
 
 ;; Subword -- allows to move on sub-word in CamelCase
 (use-package subword
-  :defer t
-  :diminish (subword-mode . " ⓒ"))
+  :defer t)
 
 ;; ++
 ;; Python
@@ -148,9 +161,8 @@
   :ensure t
   :defer t
   :init
-  (progn
-    (add-hook 'python-mode-hook 'anaconda-mode)
-    (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
+  (add-hook 'python-mode-hook 'anaconda-mode)
+  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
   :diminish anaconda-mode)
 
 ;; Anacoda company backend
