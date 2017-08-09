@@ -87,7 +87,7 @@
   :init (projectile-mode)
   :config
   (setq projectile-globally-ignored-directories
-	(append '("__pycache__")
+	(append '("*__pycache__/" "__pycache__" "*pycache/")
 		projectile-globally-ignored-directories)))
 
 ;; Helm-Projectile
@@ -95,6 +95,11 @@
   :ensure t
   :if (and (featurep 'helm) (featurep 'projectile))
   :init (helm-projectile-on))
+
+(use-package yasnippet
+  :ensure t
+  :init (yas-global-mode)
+  :diminish yas-minor-mode)
 
 ;; Smex
 ;; (use-package smex
@@ -116,7 +121,7 @@
 (use-package company
   :ensure t
   :init (global-company-mode)
-  :diminish (company-mode . " Comp"))
+  :diminish company-mode)
 
 ;; Flycheck
 (use-package flycheck
@@ -162,7 +167,7 @@
   :defer t
   :init
   (add-hook 'python-mode-hook 'anaconda-mode)
-  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+  ;; (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
   :diminish anaconda-mode)
 
 ;; Anacoda company backend
@@ -196,10 +201,13 @@
 ;; TODO: make it more general
 (setq find-grep-options "-Iq --exclude=\"*\\.svn*\"")
 
-;; Append MinGW to PATH on Windows
+;; Append MSYS2 to PATH on Windows
 (when (or (eq system-type 'windows-nt) (eq system-type 'msdos))
-  (setenv "PATH" (concat "C:\\MinGW\\msys\\1.0\\bin;" (getenv "PATH")))
-  (setq exec-path (append '("C:\\MinGW\\msys\\1.0\\bin") exec-path))
+  (setenv "PATH" (concat "C:\\msys32\\mingw32\\bin;" (getenv "PATH")))
+  (setq exec-path (append '("C:\\msys32\\mingw32\\bin") exec-path))
+
+  (setenv "PATH" (concat "C:\\msys32\\usr\\bin;" (getenv "PATH")))
+  (setq exec-path (append '("C:\\msys32\\usr\\bin") exec-path))
 
   ;; Fix 'find' listing on Windows
   (setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))
