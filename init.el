@@ -11,6 +11,24 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
+;; ----
+;; OS-dependent
+
+;; Append MSYS2 to PATH on Windows
+(when (or (eq system-type 'windows-nt) (eq system-type 'msdos))
+  (setenv "PATH" (concat "C:\\msys64\\mingw64\\bin;" (getenv "PATH")))
+  (setq exec-path (append '("C:\\msys64\\mingw64\\bin") exec-path))
+
+  (setenv "PATH" (concat "C:\\msys64\\usr\\bin;" (getenv "PATH")))
+  (setq exec-path (append '("C:\\msys64\\usr\\bin") exec-path))
+
+  ;; Fix 'find' listing on Windows
+  (setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))
+
+;; Append Homebrew bin dir to exec-path on OSX
+(when (eq system-type 'darwin)
+  (setq exec-path (append '("/usr/local/bin") exec-path)))
+
 ;; ---------
 ;; Built-ins
 
@@ -25,8 +43,26 @@
 (add-hook 'before-save-hook
 	  'delete-trailing-whitespace)	       ; delete whitespaces
 (put 'dired-find-alternate-file 'disabled nil) ; reuse dired buffers
-(which-function-mode t)		      ; shows current function name
-(defalias 'yes-or-no-p 'y-or-n-p)     ; don't ask newbie questions
+
+;; Shows current function name
+(which-function-mode t)
+
+;; find-grep-dired to not recurse in .svn folder
+;; TODO: make it more general
+(setq find-grep-options "-Iq --exclude=\"*\\.svn*\"")
+
+;; Don't ask newbie questions
+(defalias 'yes-or-no-p 'y-or-n-p)
+
+;; Prevent accidental exiting
+(setq confirm-kill-emacs 'y-or-n-p)
+
+;; Email config
+(setq send-mail-function    'smtpmail-send-it
+      user-mail-address     "skrechy@gmail.com"
+      smtpmail-smtp-server  "smtp.gmail.com"
+      smtpmail-stream-type  'ssl
+      smtpmail-smtp-service 465)
 
 ;; Keys for built-in
 (global-set-key (kbd "C-x C-b") 'bs-show)
@@ -139,22 +175,55 @@
 
 ;; Subword -- allows to move on sub-word in CamelCase
 (use-package subword
-  :defer t)
+  :defer t
+  :init
+  (progn
+    ;; Enable for Python mode
+    (add-hook 'python-mode-hook 'subword-mode)
 
-;; ++
+    ;; Enable for Clojure mode
+    (add-hook 'clojure-mode-hook 'subword-mode)
+
+    ;; Enable for C-like modes
+    (add-hook 'c-mode-common-hook 'subword-mode)))
+
+;; Helm-Gtags
+(use-package helm-gtags
+  :ensure t
+  :if (featurep 'helm)
+  :defer t
+  :init
+  (progn
+    ;; Set the default key mapping
+    (setq helm-gtags-suggested-key-mapping t)
+
+    ;; Enable for C-like modes
+    (add-hook 'c-mode-common-hook 'helm-gtags-mode))
+  :config
+  (setq helm-gtags-ignore-case t
+	helm-gtags-auto-update t)
+  :diminish helm-gtags-mode
+  )
+
+;; +++-
+;; Clojure
+(use-package cider
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'clojure-mode-hook 'cider-mode))
+
+;; +++-
 ;; Python
 
 ;; Python mode
 (use-package python
   :init
   (progn
-    (add-hook 'python-mode-hook 'subword-mode)
     (add-hook 'python-mode-hook
     	      (lambda () (set (make-local-variable
     			       'comment-inline-offset) 2)))
-    (add-hook 'python-mode-hook (lambda () (setq fill-column 79)))
-    )
-  )
+    (add-hook 'python-mode-hook (lambda () (setq fill-column 79)))))
 
 ;; WORKAROUND: for imenu bug in emacs 24.5. Remove after update!
 ;; (use-package semantic
@@ -183,37 +252,5 @@
   :defer t
   :init
   (add-hook 'python-mode-hook 'pyenv-mode))
-
-;; ----
-;; Misc
-
-;; Email config
-(setq send-mail-function    'smtpmail-send-it
-      user-mail-address     "skrechy@gmail.com"
-      smtpmail-smtp-server  "smtp.gmail.com"
-      smtpmail-stream-type  'ssl
-      smtpmail-smtp-service 465)
-
-;; Prevent accidental exiting
-(setq confirm-kill-emacs 'y-or-n-p)
-
-;; find-grep-dired to not recurse in .svn folder
-;; TODO: make it more general
-(setq find-grep-options "-Iq --exclude=\"*\\.svn*\"")
-
-;; Append MSYS2 to PATH on Windows
-(when (or (eq system-type 'windows-nt) (eq system-type 'msdos))
-  (setenv "PATH" (concat "C:\\msys32\\mingw32\\bin;" (getenv "PATH")))
-  (setq exec-path (append '("C:\\msys32\\mingw32\\bin") exec-path))
-
-  (setenv "PATH" (concat "C:\\msys32\\usr\\bin;" (getenv "PATH")))
-  (setq exec-path (append '("C:\\msys32\\usr\\bin") exec-path))
-
-  ;; Fix 'find' listing on Windows
-  (setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))
-
-;; Append Homebrew bin dir to exec-path on OSX
-(when (eq system-type 'darwin)
-  (setq exec-path (append '("/usr/local/bin") exec-path)))
 
 ;;; init.el ends here
