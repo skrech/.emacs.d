@@ -195,13 +195,13 @@
   :init
   (progn
     ;; Set the default key mapping
-    (setq helm-gtags-suggested-key-mapping t)
+    (setq helm-gtags-prefix-key "\C-cg"
+	  helm-gtags-suggested-key-mapping t
+	  helm-gtags-ignore-case t
+	  helm-gtags-auto-update t)
 
     ;; Enable for C-like modes
     (add-hook 'c-mode-common-hook 'helm-gtags-mode))
-  :config
-  (setq helm-gtags-ignore-case t
-	helm-gtags-auto-update t)
   :diminish helm-gtags-mode
   )
 
