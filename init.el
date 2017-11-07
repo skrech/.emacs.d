@@ -27,6 +27,7 @@
 
 ;; Append Homebrew bin dir to exec-path on OSX
 (when (eq system-type 'darwin)
+  (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
   (setq exec-path (append '("/usr/local/bin") exec-path)))
 
 ;; ---------
@@ -122,7 +123,8 @@
   :ensure t
   :init (projectile-mode)
   :config
-  (setq projectile-globally-ignored-directories
+  (setq projectile-indexing-method 'native
+	projectile-globally-ignored-directories
 	(append '("*__pycache__/" "__pycache__" "*pycache/")
 		projectile-globally-ignored-directories)))
 
