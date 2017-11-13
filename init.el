@@ -11,7 +11,7 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
-;; ----
+;; ------------
 ;; OS-dependent
 
 ;; Append MSYS2 to PATH on Windows
@@ -29,6 +29,12 @@
 (when (eq system-type 'darwin)
   (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
   (setq exec-path (append '("/usr/local/bin") exec-path)))
+
+;; -------
+;; Adding local-configs to load-path
+(add-to-list 'load-path (file-name-as-directory
+			 (expand-file-name "local-configs"
+					   user-emacs-directory)))
 
 ;; ---------
 ;; Built-ins
@@ -254,5 +260,35 @@
   :defer t
   :init
   (add-hook 'python-mode-hook 'pyenv-mode))
+
+;; +++
+;; Installed from source
+(setq local-sources-dir (file-name-as-directory (expand-file-name
+						 "local-sources"
+						 user-emacs-directory)))
+
+;; +++- Orgmine
+;; +++-- Orgmine Dependencies
+(use-package elmine
+  :ensure t
+  :defer t)
+
+(use-package markdown-mode
+  :ensure t
+  :defer t)
+
+(use-package request
+  :ensure t
+  :defer t)
+
+;; Add the path to source in load-path
+(add-to-list 'load-path (file-name-as-directory (expand-file-name
+						 "orgmine"
+						 local-sources-dir)))
+(when (require 'orgmine nil t)
+  (add-hook 'org-mode-hook
+	    (lambda () (if (assoc "om_project" org-file-properties)
+			   (orgmine-mode))))
+  (require 'orgmine-config))
 
 ;;; init.el ends here
