@@ -4,6 +4,9 @@
 # Emacs visited backup files
 *~
 
+# Emacs customize file
+customize.el
+
 # Installed packages
 /elpa/
 /.cask/

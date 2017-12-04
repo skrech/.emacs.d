@@ -25,10 +25,12 @@
   ;; Fix 'find' listing on Windows
   (setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))
 
-;; Append Homebrew bin dir to exec-path on OSX
+;; Append Homebrew bin dir and pyenv shim dir to exec-path on OSX
 (when (eq system-type 'darwin)
   (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
-  (setq exec-path (append '("/usr/local/bin") exec-path)))
+  (setq exec-path (append (cons (expand-file-name "shims" (expand-file-name ".pyenv" "~")) '())
+			  '("/usr/local/bin")
+			  exec-path)))
 
 ;; -------
 ;; Adding local-configs to load-path
@@ -76,6 +78,12 @@
 
 ;; ----
 ;; ELPA
+
+;; Set repos
+(setq package-archives
+      ;; Package archives
+      '(("GNU ELPA" . "http://elpa.gnu.org/packages/")
+        ("MELPA"    . "https://melpa.org/packages/")))
 
 ;; Init ELPA
 (setq package-enable-at-startup nil)    ; Do not init packages after init file
