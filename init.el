@@ -49,6 +49,8 @@
 ;; (ido-mode t)                          ; enable IDO mode
 ;; (ido-everywhere)		      ; enable IDO everywhere (?)
 
+(electric-pair-mode 1)
+
 (add-hook 'before-save-hook
 	  'delete-trailing-whitespace)	       ; delete whitespaces
 (put 'dired-find-alternate-file 'disabled nil) ; reuse dired buffers
@@ -138,15 +140,23 @@
   :init (projectile-mode)
   :config
   (setq projectile-indexing-method 'native
-	projectile-globally-ignored-directories
-	(append '("*__pycache__/" "__pycache__" "*pycache/")
-		projectile-globally-ignored-directories)))
+	projectile-enable-caching t
+	;; projectile-svn-command "svn list -R --include-externals . | grep -v '/$' | tr '\\n' '\\0'"
+	;; projectile-globally-ignored-directories (append '("*__pycache__/" "*pycache/")
+	;; 						projectile-globally-ignored-directories)
+	))
 
 ;; Helm-Projectile
 (use-package helm-projectile
   :ensure t
   :if (and (featurep 'helm) (featurep 'projectile))
   :init (helm-projectile-on))
+
+;; Helm-ag
+(use-package helm-ag
+  :ensure t
+  :defer t
+  :if (featurep 'helm))
 
 (use-package yasnippet
   :ensure t
@@ -203,6 +213,13 @@
     ;; Enable for C-like modes
     (add-hook 'c-mode-common-hook 'subword-mode)))
 
+(use-package rainbow-delimiters
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+  :diminish rainbow-delimiters-mode)
+
 ;; Helm-Gtags
 (use-package helm-gtags
   :ensure t
@@ -252,7 +269,7 @@
   :defer t
   :init
   (add-hook 'python-mode-hook 'anaconda-mode)
-  ;; (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
   :diminish anaconda-mode)
 
 ;; Anacoda company backend
