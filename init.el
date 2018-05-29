@@ -25,6 +25,12 @@
   ;; Fix 'find' listing on Windows
   (setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))
 
+;; Swap Command and Control keys on OSX because if we use Mac with
+;; their own keyboard and we remapped these keys in System
+;; Preferences.
+(setq mac-command-modifier 'control
+      mac-control-modifier 'command)
+
 ;; Append Homebrew bin dir and pyenv shim dir to exec-path on OSX
 (when (eq system-type 'darwin)
   (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
@@ -43,13 +49,14 @@
 
 ;; Config for built-ins
 (setq column-number-mode t)           ; show column number in modeline
-(global-linum-mode t)                 ; display line numbers
+(global-display-line-numbers-mode)    ; display line numbers (> ver. 26)
 (setq scroll-conservatively 10000)    ; allow to scrol line-by-line
 
-;; (ido-mode t)                          ; enable IDO mode
+;; (ido-mode t)                       ; enable IDO mode
 ;; (ido-everywhere)		      ; enable IDO everywhere (?)
 
-(electric-pair-mode 1)
+(electric-pair-mode)		      ; auto-close parentheses
+(show-paren-mode)		      ; show matching parentheses
 
 (add-hook 'before-save-hook
 	  'delete-trailing-whitespace)	       ; delete whitespaces
@@ -158,10 +165,15 @@
   :defer t
   :if (featurep 'helm))
 
+;; Yasnippet
 (use-package yasnippet
   :ensure t
   :init (yas-global-mode)
   :diminish yas-minor-mode)
+
+(use-package yasnippet-snippets
+  :ensure t
+  :if (featurep 'yasnippet))
 
 ;; Smex
 ;; (use-package smex
