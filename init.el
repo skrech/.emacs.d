@@ -48,8 +48,11 @@
 ;; Built-ins
 
 ;; Config for built-ins
-(setq column-number-mode t)           ; show column number in modeline
-(global-display-line-numbers-mode)    ; display line numbers (> ver. 26)
+(setq column-number-mode t)	    ; show column number in modeline
+(if (>= emacs-major-version 26)	    ; display line numbers (> ver. 26)
+    (global-display-line-numbers-mode)
+  (global-linum-mode t))
+
 (setq scroll-conservatively 10000)    ; allow to scrol line-by-line
 
 ;; (ido-mode t)                       ; enable IDO mode
