@@ -154,7 +154,8 @@
 	;; projectile-svn-command "svn list -R --include-externals . | grep -v '/$' | tr '\\n' '\\0'"
 	;; projectile-globally-ignored-directories (append '("*__pycache__/" "*pycache/")
 	;; 						projectile-globally-ignored-directories)
-	))
+	)
+  :bind-keymap ("C-c p" . projectile-command-map))
 
 ;; Helm-Projectile
 (use-package helm-projectile
