@@ -46,19 +46,24 @@
 
 ;; ------------------------
 ;; Global built-in configs.
+
+;; Disable toobar.
+(tool-bar-mode -1)
+
+;; Navigation numbers here and there.
 (setq column-number-mode t)	    ; show column number in modeline
 (if (>= emacs-major-version 26)	    ; display line numbers (> ver. 26)
     (global-display-line-numbers-mode)
   (global-linum-mode t))
 
+;; Fix scroll.
 (setq scroll-conservatively 10000)    ; allow to scrol line-by-line
 
-;; (ido-mode t)                       ; enable IDO mode
-;; (ido-everywhere)		      ; enable IDO everywhere (?)
-
+;; Parentheses stuff
 (electric-pair-mode)		      ; auto-close parentheses
 (show-paren-mode)		      ; show matching parentheses
 
+;; Delete trailing space before save.
 (add-hook 'before-save-hook
 	  'delete-trailing-whitespace)	       ; delete whitespaces
 (put 'dired-find-alternate-file 'disabled nil) ; reuse dired buffers
