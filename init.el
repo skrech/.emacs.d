@@ -38,29 +38,32 @@
 			  '("/usr/local/bin")
 			  exec-path)))
 
-;; -------
-;; Adding local-configs to load-path
+;; ----------------------------------
+;; Adding local-configs to load-path.
 (add-to-list 'load-path (file-name-as-directory
 			 (expand-file-name "local-configs"
 					   user-emacs-directory)))
 
-;; ---------
-;; Built-ins
+;; ------------------------
+;; Global built-in configs.
 
-;; Config for built-ins
+;; Disable toobar.
+(tool-bar-mode -1)
+
+;; Navigation numbers here and there.
 (setq column-number-mode t)	    ; show column number in modeline
 (if (>= emacs-major-version 26)	    ; display line numbers (> ver. 26)
     (global-display-line-numbers-mode)
   (global-linum-mode t))
 
+;; Fix scroll.
 (setq scroll-conservatively 10000)    ; allow to scrol line-by-line
 
-;; (ido-mode t)                       ; enable IDO mode
-;; (ido-everywhere)		      ; enable IDO everywhere (?)
-
+;; Parentheses stuff
 (electric-pair-mode)		      ; auto-close parentheses
 (show-paren-mode)		      ; show matching parentheses
 
+;; Delete trailing space before save.
 (add-hook 'before-save-hook
 	  'delete-trailing-whitespace)	       ; delete whitespaces
 (put 'dired-find-alternate-file 'disabled nil) ; reuse dired buffers
@@ -84,9 +87,6 @@
       smtpmail-smtp-server  "smtp.gmail.com"
       smtpmail-stream-type  'ssl
       smtpmail-smtp-service 465)
-
-;; Keys for built-in
-(global-set-key (kbd "C-x C-b") 'bs-show)
 
 ;; ----
 ;; ELPA
@@ -128,39 +128,45 @@
   (require 'helm-config)		; adds C-x c prefix
   (helm-mode 1)				; start helm mode
 
-  :bind (("M-x" . helm-M-x)
-	 ("C-x C-f" . helm-find-files)
-	 ("C-x C-b" . helm-buffers-list)
-	 ("C-x b" . helm-mini)
-	 ("M-y" . helm-show-kill-ring)
-	 ("M-s o" . helm-occur)
+  :bind
+  (("M-x" . helm-M-x)
+   ("C-x C-f" . helm-find-files)
+   ("C-x C-b" . helm-buffers-list)
+   ("C-x b" . helm-mini)
+   ("M-y" . helm-show-kill-ring)
+   ("M-s o" . helm-occur)
 
-	 :map helm-map
-	 ("<tab>" . helm-execute-persistent-action) ; swap <tab> and C-z
-	 ("C-z" . helm-select-action))
+   :map helm-map
+   ("<tab>" . helm-execute-persistent-action) ; swap <tab> and C-z
+   ("C-z" . helm-select-action))
 
   :config
-  (setq helm-split-window-in-side-p t) ; helm window in current window
+  (setq helm-split-window-inside-p t)  ; helm window in current window
   (setq helm-ff-skip-boring-files t)   ; don't show eg. temp files and vc
   :diminish helm-mode)
 
 ;; Projectile
 (use-package projectile
   :ensure t
-  :init (projectile-mode)
+  :init
+  (projectile-mode)
   :config
   (setq projectile-indexing-method 'native
 	projectile-enable-caching t
 	;; projectile-svn-command "svn list -R --include-externals . | grep -v '/$' | tr '\\n' '\\0'"
-	;; projectile-globally-ignored-directories (append '("*__pycache__/" "*pycache/")
-	;; 						projectile-globally-ignored-directories)
-	))
+	projectile-globally-ignored-directories (append '("*__pycache__/")
+							projectile-globally-ignored-directories)
+	)
+  :bind-keymap
+  ("C-c p" . projectile-command-map))
 
 ;; Helm-Projectile
 (use-package helm-projectile
   :ensure t
-  :if (and (featurep 'helm) (featurep 'projectile))
-  :init (helm-projectile-on))
+  :if
+  (and (featurep 'helm) (featurep 'projectile))
+  :init
+  (helm-projectile-on))
 
 ;; Helm-ag
 (use-package helm-ag
@@ -171,7 +177,8 @@
 ;; Yasnippet
 (use-package yasnippet
   :ensure t
-  :init (yas-global-mode)
+  :init
+  (yas-global-mode)
   :diminish yas-minor-mode)
 
 (use-package yasnippet-snippets
@@ -191,28 +198,35 @@
 ;; Which key
 (use-package which-key
   :ensure t
-  :init (which-key-mode)
+  :init
+  (which-key-mode)
   :diminish which-key-mode)
 
 ;; Company-mode
 (use-package company
   :ensure t
-  :init (global-company-mode)
+  :init
+  (global-company-mode)
   :diminish company-mode)
 
 ;; Flycheck
 (use-package flycheck
   :ensure t
-  :init (global-flycheck-mode))
+  :init
+  (global-flycheck-mode))
 
 ;; Flycheck pos-tip
 (use-package flycheck-pos-tip
   :ensure t
-  :init (with-eval-after-load 'flycheck
-	  (flycheck-pos-tip-mode)))
+  :init
+  (with-eval-after-load 'flycheck
+    (flycheck-pos-tip-mode)))
 
 ;; +++
 ;; Deffered
+
+;; +++-
+;; Built-in
 
 ;; Subword -- allows to move on sub-word in CamelCase
 (use-package subword
@@ -228,6 +242,31 @@
     ;; Enable for C-like modes
     (add-hook 'c-mode-common-hook 'subword-mode)))
 
+;; Org-mode -- Emacs' flawless organize package.
+(use-package org
+  :defer t
+  :bind (("C-c l" . org-store-link)
+	 ("C-c a" . org-agenda)
+	 ("C-c c" . org-capture)
+	 ("C-c b" . org-switchb))
+  :config
+  (setq org-directory "~/org"
+	org-default-notes-file "~/org/refile.org"
+
+	;; Search for agenda files in this file.
+	org-agenda-files "~/org/agenda_files"
+
+	;; Custom capture templates.
+	;; NOTE: This is variable from package org-capture...
+	org-capture-templates '(("t" "Task" entry (file "")
+				 "* TODO %?\n  Logged on: %u"))
+
+	org-refile-targets '(("~/org/antelope_projects.org" . (:level . 1)))))
+
+;; +++-
+;; Misc
+
+;; Rainbow-Delimiters -- colors parentheses in programming modes.
 (use-package rainbow-delimiters
   :ensure t
   :defer t
@@ -235,7 +274,7 @@
   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
   :diminish rainbow-delimiters-mode)
 
-;; Helm-Gtags
+;; Helm-Gtags -- helm interface to gtags.
 (use-package helm-gtags
   :ensure t
   :if (featurep 'helm)
@@ -250,8 +289,7 @@
 
     ;; Enable for C-like modes
     (add-hook 'c-mode-common-hook 'helm-gtags-mode))
-  :diminish helm-gtags-mode
-  )
+  :diminish helm-gtags-mode)
 
 ;; +++-
 ;; Clojure
