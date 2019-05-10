@@ -303,10 +303,6 @@
 
 ;; +++
 ;; Installed from source
-(setq local-sources-dir (file-name-as-directory (expand-file-name
-						 "local-sources"
-						 user-emacs-directory)))
-
 ;; +++- Orgmine
 ;; +++-- Orgmine Dependencies
 (use-package elmine
@@ -321,14 +317,19 @@
   :ensure t
   :defer t)
 
-;; Add the path to source in load-path
-(add-to-list 'load-path (file-name-as-directory (expand-file-name
-						 "orgmine"
-						 local-sources-dir)))
-(when (require 'orgmine nil t)
-  (add-hook 'org-mode-hook
-	    (lambda () (if (assoc "om_project" org-file-properties)
-			   (orgmine-mode))))
-  (require 'orgmine-config))
+(let ((local-sources-dir (file-name-as-directory
+			  (expand-file-name
+			   "local-sources"
+			   user-emacs-directory))))
+  ;; Add the path to source in load-path
+  (add-to-list 'load-path (file-name-as-directory
+			   (expand-file-name
+			    "orgmine"
+			    local-sources-dir)))
+  (when (require 'orgmine nil t)
+    (add-hook 'org-mode-hook
+	      (lambda () (if (assoc "om_project" org-file-properties)
+			     (orgmine-mode))))
+    (require 'orgmine-config)))
 
 ;;; init.el ends here
