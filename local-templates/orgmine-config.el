@@ -13,7 +13,8 @@
 	   (version-title-format . "[[redmine:versions/%{id}][V#%{id}]] %{name}")
 	   (tracker-title-format . "%{name}")
 	   (project-title-format . "[[redmine:projects/%{identifier}][%{identifier}]] %{name}")
-	   (user-name-format . "%{firstname} %{lastname}"))))
+	   (user-name-format . "%{firstname} %{lastname}")
+	   (default-todo-keyword . "NEW"))))
 
 (provide 'orgmine-config)
 
