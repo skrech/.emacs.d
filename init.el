@@ -264,34 +264,6 @@
 	org-refile-targets '(("~/org/antelope_projects.org" . (:level . 1)))))
 
 ;; +++-
-;; Misc
-
-;; Rainbow-Delimiters -- colors parentheses in programming modes.
-(use-package rainbow-delimiters
-  :ensure t
-  :defer t
-  :init
-  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
-  :diminish rainbow-delimiters-mode)
-
-;; Helm-Gtags -- helm interface to gtags.
-(use-package helm-gtags
-  :ensure t
-  :if (featurep 'helm)
-  :defer t
-  :init
-  (progn
-    ;; Set the default key mapping
-    (setq helm-gtags-prefix-key "\C-cg"
-	  helm-gtags-suggested-key-mapping t
-	  helm-gtags-ignore-case t
-	  helm-gtags-auto-update t)
-
-    ;; Enable for C-like modes
-    (add-hook 'c-mode-common-hook 'helm-gtags-mode))
-  :diminish helm-gtags-mode)
-
-;; +++-
 ;; Clojure
 (use-package cider
   :ensure t
@@ -338,6 +310,34 @@
   :defer t
   :init
   (add-hook 'python-mode-hook 'pyenv-mode))
+
+;; +++-
+;; Misc
+
+;; Rainbow-Delimiters -- colors parentheses in programming modes.
+(use-package rainbow-delimiters
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+  :diminish rainbow-delimiters-mode)
+
+;; Helm-Gtags -- helm interface to gtags.
+(use-package helm-gtags
+  :ensure t
+  :if (featurep 'helm)
+  :defer t
+  :init
+  (progn
+    ;; Set the default key mapping
+    (setq helm-gtags-prefix-key "\C-cg"
+	  helm-gtags-suggested-key-mapping t
+	  helm-gtags-ignore-case t
+	  helm-gtags-auto-update t)
+
+    ;; Enable for C-like modes
+    (add-hook 'c-mode-common-hook 'helm-gtags-mode))
+  :diminish helm-gtags-mode)
 
 ;; +++
 ;; Installed from source
