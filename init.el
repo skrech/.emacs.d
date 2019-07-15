@@ -34,9 +34,12 @@
 ;; Append Homebrew bin dir and pyenv shim dir to exec-path on OSX
 (when (eq system-type 'darwin)
   (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
-  (setq exec-path (append (cons (expand-file-name "shims" (expand-file-name ".pyenv" "~")) '())
-			  '("/usr/local/bin")
+  (setq exec-path (append '((expand-file-name "shims" (expand-file-name ".pyenv" "~"))
+			    "/usr/local/bin")
 			  exec-path)))
+
+(when (eq system-type 'gnu/linux)
+  (setq exec-path (cons (expand-file-name "bin" "~") exec-path)))
 
 ;; ----------------------------------
 ;; Adding local-configs to load-path.
