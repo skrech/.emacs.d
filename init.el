@@ -188,15 +188,13 @@
   :ensure t
   :if (featurep 'yasnippet))
 
-;; Smex
-;; (use-package smex
-;;  :ensure t
-;;  :bind ("M-x" . smex))
-
-;; IDO Ubiquitous
-;; (use-package ido-ubiquitous
-;;   :ensure t
-;;   :init (ido-ubiquitous-mode))
+;; Semantic - Source code lexical analysis from CEDET
+(use-package semantic
+  :init
+  (semantic-mode 1)
+  :config
+  ;; Remove python from semantic
+  (assoc-delete-all 'python-mode semantic-new-buffer-setup-functions))
 
 ;; Which key
 (use-package which-key
@@ -286,11 +284,6 @@
     			       'comment-inline-offset) 2)))
     (add-hook 'python-mode-hook (lambda () (setq fill-column 79)))))
 
-;; WORKAROUND: for imenu bug in emacs 24.5. Remove after update!
-;; (use-package semantic
-;;   :config (remove-hook 'python-mode-hook 'wisent-python-default-setup)
-;;   )
-
 ;; Anaconda-mode
 (use-package anaconda-mode
   :ensure t
@@ -341,6 +334,12 @@
     ;; Enable for C-like modes
     (add-hook 'c-mode-common-hook 'helm-gtags-mode))
   :diminish helm-gtags-mode)
+
+;; Epub reader
+(use-package nov
+  :ensure t
+  :defer t
+  :mode ("\\.epub\\'" . nov-mode))
 
 ;; +++
 ;; Installed from source
