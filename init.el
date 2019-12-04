@@ -236,6 +236,10 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   (with-eval-after-load 'flycheck
     (flycheck-pos-tip-mode)))
 
+;;  Diminish - needed for proper work of use-package
+(use-package diminish
+  :ensure t)
+
 ;; +++
 ;; Deffered
 
