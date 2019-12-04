@@ -91,6 +91,19 @@
       smtpmail-stream-type  'ssl
       smtpmail-smtp-service 465)
 
+;; Abbreviate long path-like Git branch names
+(defun shorten-git-mode-line (return-string)
+  "Abbreviates path-like Git branches and preserves the prefix.
+RETURN-STRING - the string returned by vc-git-mode-line-string."
+  (let ((prefix (substring return-string 0 4)))
+    (concat prefix (replace-regexp-in-string "\\([^/]\\{2\\}\\)[^/]*/"
+					     "\\1/"
+					     return-string
+					     nil nil nil 4))))
+(advice-add 'vc-git-mode-line-string
+	    :filter-return
+	    'shorten-git-mode-line)
+
 ;; ----
 ;; ELPA
 
