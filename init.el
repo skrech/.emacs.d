@@ -214,7 +214,9 @@
 (use-package flycheck
   :ensure t
   :init
-  (global-flycheck-mode))
+  (global-flycheck-mode)
+  :config
+  (setq flycheck-python-flake8-executable "python"))
 
 ;; Flycheck pos-tip
 (use-package flycheck-pos-tip
