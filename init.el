@@ -281,6 +281,11 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 
 	org-refile-targets '(("~/org/antelope_projects.org" . (:level . 1)))))
 
+;; ElDoc -- just diminish the minor mode.
+(use-package eldoc
+  :defer t
+  :diminish eldoc-mode)
+
 ;; +++-
 ;; Clojure
 (use-package cider
