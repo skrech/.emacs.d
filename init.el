@@ -281,7 +281,7 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 	org-capture-templates '(("t" "Task" entry (file "")
 				 "* TODO %?\n  Logged on: %u"))
 
-	org-refile-targets '(("~/org/antelope_projects.org" . (:level . 1)))))
+	org-refile-targets '(("~/org/projects.org" . (:level . 1)))))
 
 ;; ElDoc -- just diminish the minor mode.
 (use-package eldoc
@@ -329,7 +329,24 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :ensure t
   :defer t
   :init
-  (add-hook 'python-mode-hook 'pyenv-mode))
+  (add-hook 'python-mode-hook 'pyenv-mode)
+  :diminish pyenv-mode)
+
+;; Sphinx docstrings generation
+(use-package sphinx-doc
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'python-mode-hook 'sphinx-doc-mode)
+  :diminish sphinx-doc-mode)
+
+;; Syntax highlight and fill-paragraph for docstrings.
+(use-package python-docstring
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'python-mode-hook 'python-docstring-mode)
+  :diminish python-docstring-mode)
 
 ;; +++-
 ;; Misc
