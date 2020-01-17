@@ -169,12 +169,13 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :config
   (setq projectile-indexing-method 'native
 	projectile-enable-caching t
+	projectile-mode-line-function '(lambda () (format " Prj[%s]" (projectile-project-name)))
 	;; projectile-svn-command "svn list -R --include-externals . | grep -v '/$' | tr '\\n' '\\0'"
 	projectile-globally-ignored-directories (append '("*__pycache__/")
 							projectile-globally-ignored-directories)
 	)
   :bind-keymap
-  ("C-c p" . projectile-command-map))
+  ("C-x p" . projectile-command-map))
 
 ;; Helm-Projectile
 (use-package helm-projectile
