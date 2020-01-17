@@ -266,23 +266,26 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 ;; Org-mode -- Emacs' flawless organize package.
 (use-package org
   :defer t
-  :bind (("C-c l" . org-store-link)
-	 ("C-c a" . org-agenda)
-	 ("C-c c" . org-capture)
-	 ("C-c b" . org-switchb))
+  :bind (("C-x j l" . org-store-link)
+	 ("C-x j a" . org-agenda)
+	 ("C-x j c" . org-capture)
+	 ("C-x j b" . org-switchb))
   :config
   (setq org-directory "~/org"
-	org-default-notes-file "~/org/refile.org"
+	org-default-notes-file (concat org-directory "/refile.org")
 
 	;; Search for agenda files in this file.
-	org-agenda-files "~/org/agenda_files"
+	org-agenda-files (concat org-directory "/agenda_files")
 
 	;; Custom capture templates.
 	;; NOTE: This is variable from package org-capture...
 	org-capture-templates '(("t" "Task" entry (file "")
-				 "* TODO %?\n  Logged on: %u"))
+				 "* TODO %?\n  Logged on: %u")
 
-	org-refile-targets '(("~/org/projects.org" . (:level . 1)))))
+				("n" "Note" entry (file "notes.org")
+				 "* %?\n  Logged on: %u"))
+
+	org-refile-targets '((org-agenda-files . (:level . 1)))))
 
 ;; ElDoc -- just diminish the minor mode.
 (use-package eldoc
