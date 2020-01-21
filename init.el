@@ -31,13 +31,6 @@
 (setq mac-command-modifier 'control
       mac-control-modifier 'command)
 
-;; Append Homebrew bin dir and pyenv shim dir to exec-path on OSX
-(when (eq system-type 'darwin)
-  (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
-  (setq exec-path (append (list (expand-file-name "shims" (expand-file-name ".pyenv" "~"))
-				"/usr/local/bin")
-			  exec-path)))
-
 (when (eq system-type 'gnu/linux)
   (setq exec-path (cons (expand-file-name "bin" "~") exec-path)))
 
@@ -103,6 +96,27 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 (advice-add 'vc-git-mode-line-string
 	    :filter-return
 	    'shorten-git-mode-line)
+
+;; ----
+;; Straight
+
+;; Disable straight.el customization hacks.
+(defvar straight-enable-package-integration)
+(setq straight-enable-package-integration nil)
+
+;; Bootstrap straight.el
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
 ;; ----
 ;; ELPA
@@ -328,13 +342,15 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :init (with-eval-after-load 'company
   	  (add-to-list 'company-backends 'company-anaconda)))
 
-;; Pyenv-mode
-(use-package pyenv-mode
-  :ensure t
-  :defer t
+;; Pyenv
+(use-package pyenv
+  :straight (:host github :repo "aiguofer/pyenv.el")
   :init
-  (add-hook 'python-mode-hook 'pyenv-mode)
-  :diminish pyenv-mode)
+  ;; This is a global mode, but I use python buffers to defer it's enablement.
+  (add-hook 'python-mode-hook 'global-pyenv-mode)
+  :config
+  (when (eq system-type 'darwin)
+    (setq pyenv-executable "/usr/local/bin/pyenv")))
 
 ;; Sphinx docstrings generation
 (use-package sphinx-doc
