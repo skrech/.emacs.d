@@ -336,6 +336,11 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 
 	org-refile-targets '((org-agenda-files . (:level . 1)))))
 
+;; +++-
+;; LSP Client -- common for many languages.
+(use-package eglot
+  :ensure t
+  :defer t)
 
 ;; +++-
 ;; Clojure
@@ -349,29 +354,33 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 ;; Python
 
 ;; Python mode
+(defun sch-python-fill-column ()
+  (setq fill-column 79))
+
 (use-package python
   :init
   (progn
     (add-hook 'python-mode-hook
     	      (lambda () (set (make-local-variable
     			       'comment-inline-offset) 2)))
-    (add-hook 'python-mode-hook (lambda () (setq fill-column 79)))))
+    (add-hook 'python-mode-hook 'sch-python-fill-column)
+    (add-hook 'python-mode-hook 'eglot-ensure)))
 
 ;; Anaconda-mode
-(use-package anaconda-mode
-  :ensure t
-  :defer t
-  :init
-  (add-hook 'python-mode-hook 'anaconda-mode)
-  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
-  :diminish anaconda-mode)
+;; (use-package anaconda-mode
+;;   :ensure t
+;;   :defer t
+;;   :init
+;;   (add-hook 'python-mode-hook 'anaconda-mode)
+;;   (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+;;   :diminish anaconda-mode)
 
 ;; Anacoda company backend
-(use-package company-anaconda
-  :ensure t
-  :defer t
-  :init (with-eval-after-load 'company
-  	  (add-to-list 'company-backends 'company-anaconda)))
+;; (use-package company-anaconda
+;;   :ensure t
+;;   :defer t
+;;   :init (with-eval-after-load 'company
+;;   	  (add-to-list 'company-backends 'company-anaconda)))
 
 ;; Pyenv
 (use-package pyenv
@@ -379,6 +388,7 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :init
   ;; This is a global mode, but I use python buffers to defer it's enablement.
   (add-hook 'python-mode-hook 'global-pyenv-mode)
+  :bind (("C-x M-v" . pyenv-use))
   :config
   (when (eq system-type 'darwin)
     (setq pyenv-executable "/usr/local/bin/pyenv")))
