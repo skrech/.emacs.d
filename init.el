@@ -293,6 +293,11 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 (advice-add 'flymake--mode-line-format
 	    :filter-return 'sch/transform-flymake-mode-line-format)
 
+;; ElDoc -- just diminish the minor mode.
+(use-package eldoc
+  :defer t
+  :diminish eldoc-mode)
+
 ;; Subword -- allows to move on sub-word in CamelCase
 (use-package subword
   :defer t
