@@ -157,9 +157,6 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 ;; Always-on
 
 ;; Themes
-(use-package zenburn-theme
-  :ensure t)
-
 (use-package color-theme-sanityinc-tomorrow
   :ensure t
   :init
