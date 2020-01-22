@@ -385,14 +385,14 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 (use-package pyenv
   :straight (:host github :repo "aiguofer/pyenv.el")
   :init
-  ;; This is a global mode, but I use python buffers to defer it's enablement.
-  (add-hook 'python-mode-hook 'global-pyenv-mode)
+  (when (eq system-type 'darwin)
+    (setq pyenv-executable "/usr/local/bin/pyenv"))
+
+  (global-pyenv-mode)
+
   ;; Restart eglot server on change of python version.
   (add-hook 'pyenv-mode-hook 'sch/restart-eglot-on-pyenv-change)
-  :bind (("C-x M-v" . pyenv-use))
-  :config
-  (when (eq system-type 'darwin)
-    (setq pyenv-executable "/usr/local/bin/pyenv")))
+  :bind (("C-x M-v" . pyenv-use)))
 
 ;; Sphinx docstrings generation
 (use-package sphinx-doc
