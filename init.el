@@ -68,7 +68,7 @@
 ;; prog-mode.
 (defun sch/which-function-in-header ()
   "Puts which-function output in header line."
-  (setq header-line-format '("" which-func-format " ")))
+  (setq header-line-format '(" " which-func-format " ")))
 
 (which-function-mode t)
 (add-hook 'prog-mode-hook 'sch/which-function-in-header)
@@ -356,16 +356,14 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 ;; Python
 
 ;; Python mode
-(defun sch-python-fill-column ()
-  (setq fill-column 79))
+(defun sch/python-misc-config ()
+  (setq fill-column 79)
+  (set (make-local-variable 'comment-inline-offset) 2))
 
 (use-package python
+  :defer t
   :init
-  (progn
-    (add-hook 'python-mode-hook
-    	      (lambda () (set (make-local-variable
-    			       'comment-inline-offset) 2)))
-    (add-hook 'python-mode-hook 'sch-python-fill-column)))
+  (add-hook 'python-mode-hook 'sch/python-misc-config))
 
 ;; Anaconda-mode
 ;; (use-package anaconda-mode
