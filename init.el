@@ -422,7 +422,7 @@ RET is the original return from the function."
 ;;   	  (add-to-list 'company-backends 'company-anaconda)))
 
 ;; Pyenv
-(defface sch/pyenv-python-face '((t (:weight bold :foreground "Blue")))
+(defface sch/pyenv-face '((t (:weight bold :foreground "#de935f")))
   "The face used to highlight the current python on the modeline."
   :group 'pyenv)
 
@@ -437,7 +437,7 @@ CURRENT-PYTHON - string, currently selected python version."
 	      (format "|%s|" (propertize
 			      ,current-python
 			      'face
-			      'pyenv-active-python-face)))))
+			      'sch/pyenv-face)))))
 
 (use-package pyenv
   :straight (:host github :repo "aiguofer/pyenv.el")
