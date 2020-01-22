@@ -473,6 +473,12 @@ CURRENT-PYTHON - string, currently selected python version."
   :diminish python-docstring-mode)
 
 ;; +++-
+;; HTTP
+(use-package restclient
+  :ensure t
+  :defer t)
+
+;; +++-
 ;; Misc
 
 ;; Rainbow-Delimiters -- colors parentheses in programming modes.
