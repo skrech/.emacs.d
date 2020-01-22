@@ -340,7 +340,9 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 ;; LSP Client -- common for many languages.
 (use-package eglot
   :ensure t
-  :defer t)
+  :defer t
+  :init
+  (add-hook 'python-mode-hook 'eglot-ensure))
 
 ;; +++-
 ;; Clojure
@@ -363,8 +365,7 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
     (add-hook 'python-mode-hook
     	      (lambda () (set (make-local-variable
     			       'comment-inline-offset) 2)))
-    (add-hook 'python-mode-hook 'sch-python-fill-column)
-    (add-hook 'python-mode-hook 'eglot-ensure)))
+    (add-hook 'python-mode-hook 'sch-python-fill-column)))
 
 ;; Anaconda-mode
 ;; (use-package anaconda-mode
@@ -383,11 +384,16 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 ;;   	  (add-to-list 'company-backends 'company-anaconda)))
 
 ;; Pyenv
+(defun sch/restart-eglot-on-pyenv-change ()
+  (and (featurep 'eglot) (eglot-ensure)))
+
 (use-package pyenv
   :straight (:host github :repo "aiguofer/pyenv.el")
   :init
   ;; This is a global mode, but I use python buffers to defer it's enablement.
   (add-hook 'python-mode-hook 'global-pyenv-mode)
+  ;; Restart eglot server on change of python version.
+  (add-hook 'pyenv-mode-hook 'sch/restart-eglot-on-pyenv-change)
   :bind (("C-x M-v" . pyenv-use))
   :config
   (when (eq system-type 'darwin)
