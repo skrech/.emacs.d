@@ -253,19 +253,19 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :diminish company-mode)
 
 ;; Flycheck
-(use-package flycheck
-  :ensure t
-  :init
-  (global-flycheck-mode)
-  :config
-  (setq flycheck-python-flake8-executable "python"))
+;; (use-package flycheck
+;;   :ensure t
+;;   :init
+;;   (global-flycheck-mode)
+;;   :config
+;;   (setq flycheck-python-flake8-executable "python"))
 
 ;; Flycheck pos-tip
-(use-package flycheck-pos-tip
-  :ensure t
-  :init
-  (with-eval-after-load 'flycheck
-    (flycheck-pos-tip-mode)))
+;; (use-package flycheck-pos-tip
+;;   :ensure t
+;;   :init
+;;   (with-eval-after-load 'flycheck
+;;     (flycheck-pos-tip-mode)))
 
 ;;  Diminish - needed for proper work of use-package
 (use-package diminish
@@ -276,6 +276,22 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 
 ;; +++-
 ;; Built-in
+
+;; Flymake -- And shorten the mode-line string.
+(use-package flymake
+  :defer t
+  :bind
+  (:map flymake-mode-map
+	("M-n" . flymake-goto-next-error)
+	("M-p" . flymake-goto-prev-error)))
+
+(defun sch/transform-flymake-mode-line-format (ret)
+  "Change the output of `flymake--mode-line-format'."
+  (setf (seq-elt (car ret) 1) " Fly")
+  ret)
+
+(advice-add 'flymake--mode-line-format
+	    :filter-return 'sch/transform-flymake-mode-line-format)
 
 ;; Subword -- allows to move on sub-word in CamelCase
 (use-package subword
@@ -315,10 +331,6 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 
 	org-refile-targets '((org-agenda-files . (:level . 1)))))
 
-;; ElDoc -- just diminish the minor mode.
-(use-package eldoc
-  :defer t
-  :diminish eldoc-mode)
 
 ;; +++-
 ;; Clojure
