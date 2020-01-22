@@ -64,8 +64,22 @@
 	  'delete-trailing-whitespace)	       ; delete whitespaces
 (put 'dired-find-alternate-file 'disabled nil) ; reuse dired buffers
 
-;; Shows current function name
+;; Shows current function name -- in the header for modes derived from
+;; prog-mode.
+(defun sch/which-function-in-header ()
+  "Puts which-function output in header line."
+  (setq header-line-format '("" which-func-format " ")))
+
 (which-function-mode t)
+(add-hook 'prog-mode-hook 'sch/which-function-in-header)
+(let ((misc-info (assq-delete-all 'which-function-mode mode-line-misc-info)))
+  (add-to-list 'misc-info
+           '(which-function-mode   ;Only display if mode is enabled.
+                 (which-func-mode  ;Only display if buffer supports it.
+                  (:eval           ;Only for major modes not derived from prog-mode
+           (unless (derived-mode-p 'prog-mode)
+             (concat (format-mode-line which-func-format) " "))))))
+  (setq mode-line-misc-info misc-info))
 
 ;; find-grep-dired to not recurse in .svn folder
 ;; TODO: make it more general
