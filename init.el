@@ -31,13 +31,6 @@
 (setq mac-command-modifier 'control
       mac-control-modifier 'command)
 
-;; Append Homebrew bin dir and pyenv shim dir to exec-path on OSX
-(when (eq system-type 'darwin)
-  (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
-  (setq exec-path (append (list (expand-file-name "shims" (expand-file-name ".pyenv" "~"))
-				"/usr/local/bin")
-			  exec-path)))
-
 (when (eq system-type 'gnu/linux)
   (setq exec-path (cons (expand-file-name "bin" "~") exec-path)))
 
@@ -126,6 +119,27 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 	    'shorten-git-mode-line)
 
 ;; ----
+;; Straight
+
+;; Disable straight.el customization hacks.
+(defvar straight-enable-package-integration)
+(setq straight-enable-package-integration nil)
+
+;; Bootstrap straight.el
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+;; ----
 ;; ELPA
 
 ;; Set repos
@@ -150,9 +164,6 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 ;; Always-on
 
 ;; Themes
-(use-package zenburn-theme
-  :ensure t)
-
 (use-package color-theme-sanityinc-tomorrow
   :ensure t
   :init
@@ -228,13 +239,14 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :config
   (setq projectile-indexing-method 'native
 	projectile-enable-caching t
+	projectile-mode-line-function '(lambda () (format " Prj[%s]" (projectile-project-name)))
 	;; projectile-svn-command "svn list -R --include-externals . | grep -v '/$' | tr '\\n' '\\0'"
 	projectile-globally-ignored-directories (append '("*__pycache__/")
 							projectile-globally-ignored-directories)
 	projectile-completion-system 'ivy
 	)
   :bind-keymap
-  ("C-c p" . projectile-command-map))
+  ("C-x p" . projectile-command-map))
 
 ;; Counsel-projectile -- Integrates projectile with Ivy
 (use-package counsel-projectile
@@ -278,17 +290,19 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :diminish company-mode)
 
 ;; Flycheck
-(use-package flycheck
-  :ensure t
-  :init
-  (global-flycheck-mode))
+;; (use-package flycheck
+;;   :ensure t
+;;   :init
+;;   (global-flycheck-mode)
+;;   :config
+;;   (setq flycheck-python-flake8-executable "python"))
 
 ;; Flycheck pos-tip
-(use-package flycheck-pos-tip
-  :ensure t
-  :init
-  (with-eval-after-load 'flycheck
-    (flycheck-pos-tip-mode)))
+;; (use-package flycheck-pos-tip
+;;   :ensure t
+;;   :init
+;;   (with-eval-after-load 'flycheck
+;;     (flycheck-pos-tip-mode)))
 
 ;;  Diminish - needed for proper work of use-package
 (use-package diminish
@@ -299,6 +313,28 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 
 ;; +++-
 ;; Built-in
+
+;; Flymake -- And shorten the mode-line string.
+(use-package flymake
+  :defer t
+  :bind
+  (:map flymake-mode-map
+	("M-n" . flymake-goto-next-error)
+	("M-p" . flymake-goto-prev-error)))
+
+(defun sch/shorten-flymake-mode-line (ret)
+  "Change the output of `flymake--mode-line-format'.
+RET is the original return from the function."
+  (setf (seq-elt (car ret) 1) " Fly")
+  ret)
+
+(advice-add 'flymake--mode-line-format
+	    :filter-return 'sch/shorten-flymake-mode-line)
+
+;; ElDoc -- just diminish the minor mode.
+(use-package eldoc
+  :defer t
+  :diminish eldoc-mode)
 
 ;; Subword -- allows to move on sub-word in CamelCase
 (use-package subword
@@ -317,28 +353,34 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 ;; Org-mode -- Emacs' flawless organize package.
 (use-package org
   :defer t
-  :bind (("C-c l" . org-store-link)
-	 ("C-c a" . org-agenda)
-	 ("C-c c" . org-capture)
-	 ("C-c b" . org-switchb))
+  :bind (("C-x j l" . org-store-link)
+	 ("C-x j a" . org-agenda)
+	 ("C-x j c" . org-capture)
+	 ("C-x j b" . org-switchb))
   :config
   (setq org-directory "~/org"
-	org-default-notes-file "~/org/refile.org"
+	org-default-notes-file (concat org-directory "/refile.org")
 
 	;; Search for agenda files in this file.
-	org-agenda-files "~/org/agenda_files"
+	org-agenda-files (concat org-directory "/agenda_files")
 
 	;; Custom capture templates.
 	;; NOTE: This is variable from package org-capture...
 	org-capture-templates '(("t" "Task" entry (file "")
-				 "* TODO %?\n  Logged on: %u"))
+				 "* TODO %?\n  Logged on: %u")
 
-	org-refile-targets '(("~/org/antelope_projects.org" . (:level . 1)))))
+				("n" "Note" entry (file "notes.org")
+				 "* %?\n  Logged on: %u"))
 
-;; ElDoc -- just diminish the minor mode.
-(use-package eldoc
+	org-refile-targets '((org-agenda-files . (:level . 1)))))
+
+;; +++-
+;; LSP Client -- common for many languages.
+(use-package eglot
+  :ensure t
   :defer t
-  :diminish eldoc-mode)
+  :init
+  (add-hook 'python-mode-hook 'eglot-ensure))
 
 ;; +++-
 ;; Clojure
@@ -352,36 +394,77 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 ;; Python
 
 ;; Python mode
+(defun sch/python-misc-config ()
+  (setq fill-column 79)
+  (set (make-local-variable 'comment-inline-offset) 2))
+
 (use-package python
+  :defer t
   :init
-  (progn
-    (add-hook 'python-mode-hook
-    	      (lambda () (set (make-local-variable
-    			       'comment-inline-offset) 2)))
-    (add-hook 'python-mode-hook (lambda () (setq fill-column 79)))))
+  (add-hook 'python-mode-hook 'sch/python-misc-config))
 
 ;; Anaconda-mode
-(use-package anaconda-mode
-  :ensure t
-  :defer t
-  :init
-  (add-hook 'python-mode-hook 'anaconda-mode)
-  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
-  :diminish anaconda-mode)
+;; (use-package anaconda-mode
+;;   :ensure t
+;;   :defer t
+;;   :init
+;;   (add-hook 'python-mode-hook 'anaconda-mode)
+;;   (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+;;   :diminish anaconda-mode)
 
 ;; Anacoda company backend
-(use-package company-anaconda
-  :ensure t
-  :defer t
-  :init (with-eval-after-load 'company
-  	  (add-to-list 'company-backends 'company-anaconda)))
+;; (use-package company-anaconda
+;;   :ensure t
+;;   :defer t
+;;   :init (with-eval-after-load 'company
+;;   	  (add-to-list 'company-backends 'company-anaconda)))
 
-;; Pyenv-mode
-(use-package pyenv-mode
+;; Pyenv
+(defface sch/pyenv-python-face '((t (:weight bold :foreground "Blue")))
+  "The face used to highlight the current python on the modeline."
+  :group 'pyenv)
+
+(defun sch/restart-eglot-on-pyenv-change ()
+  (and (featurep 'eglot) (eglot-ensure)))
+
+(defun sch/pyenv-modeline-function (current-python)
+  `(:eval (if (eq major-mode 'python-mode)
+	      (format "|%s|" (propertize
+			      ,current-python
+			      'face
+			      'pyenv-active-python-face)))))
+
+(use-package pyenv
+  :straight (:host github :repo "aiguofer/pyenv.el")
+  :init
+  ;; Search in Homebrew for binaries on MacOS.
+  (when (eq system-type 'darwin)
+    (setq pyenv-executable "/usr/local/bin/pyenv"))
+
+  ;; Change mode-line func.
+  (setq pyenv-modeline-function 'sch/pyenv-modeline-function)
+
+  (global-pyenv-mode)
+
+  ;; Restart eglot server on change of python version.
+  (add-hook 'pyenv-mode-hook 'sch/restart-eglot-on-pyenv-change)
+  :bind (("C-x M-v" . pyenv-use)))
+
+;; Sphinx docstrings generation
+(use-package sphinx-doc
   :ensure t
   :defer t
   :init
-  (add-hook 'python-mode-hook 'pyenv-mode))
+  (add-hook 'python-mode-hook 'sphinx-doc-mode)
+  :diminish sphinx-doc-mode)
+
+;; Syntax highlight and fill-paragraph for docstrings.
+(use-package python-docstring
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'python-mode-hook 'python-docstring-mode)
+  :diminish python-docstring-mode)
 
 ;; +++-
 ;; Misc
