@@ -158,29 +158,67 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :init
   (load-theme 'sanityinc-tomorrow-eighties t))
 
-;; Helm
-(use-package helm
+;; Ivy -- Completion mechanism.
+(use-package ivy
   :ensure t
   :init
-  (require 'helm-config)		; adds C-x c prefix
-  (helm-mode 1)				; start helm mode
-
-  :bind
-  (("M-x" . helm-M-x)
-   ("C-x C-f" . helm-find-files)
-   ("C-x C-b" . helm-buffers-list)
-   ("C-x b" . helm-mini)
-   ("M-y" . helm-show-kill-ring)
-   ("M-s o" . helm-occur)
-
-   :map helm-map
-   ("<tab>" . helm-execute-persistent-action) ; swap <tab> and C-z
-   ("C-z" . helm-select-action))
-
+  (ivy-mode)
   :config
-  (setq helm-split-window-inside-p t)  ; helm window in current window
-  (setq helm-ff-skip-boring-files t)   ; don't show eg. temp files and vc
-  :diminish helm-mode)
+  ;; ;TODO: remove this at some point - it's a workaround.
+  (setq ivy-use-virtual-buffers t)
+  (defcustom ivy-use-group-face-if-no-groups t
+    "If t, and the expression has no subgroups, highlight whole match as a group.
+    It will then use the second face (first of the \"group\" faces)
+    of `ivy-minibuffer-faces'.  Otherwise, always use the first face
+    in this case."
+    :type 'boolean)
+  :diminish ivy-mode)
+
+;; Counsel -- Power replacement for Emacs' commands and some external tools.
+(use-package counsel
+  :ensure t
+  :init
+  (counsel-mode)
+  :bind
+  (("C-c c r" . ivy-resume)
+   ("C-c c g" . counsel-git)
+   ("C-c c j" . counsel-git-grep)
+   ("C-c c L" . counsel-git-log)
+   ("C-c c l" . counsel-locate)
+   ("C-c c a" . counsel-ag)
+   ("C-c c i" . counsel-imenu))
+  :diminish counsel-mode)
+
+;; Swiper -- Isearch on steroids using Ivy.
+(use-package swiper
+  :ensure t
+  :bind
+  (("C-s" . swiper-isearch)
+   ("M-s ." . swiper-isearch-thing-at-point)))
+
+;; Helm
+;; (use-package helm
+;;   :ensure t
+;;   :init
+;;   (require 'helm-config)		; adds C-x c prefix
+;;   (helm-mode 1)				; start helm mode
+
+;;   :bind
+;;   (("M-x" . helm-M-x)
+;;    ("C-x C-f" . helm-find-files)
+;;    ("C-x C-b" . helm-buffers-list)
+;;    ("C-x b" . helm-mini)
+;;    ("M-y" . helm-show-kill-ring)
+;;    ("M-s o" . helm-occur)
+
+;;    :map helm-map
+;;    ("<tab>" . helm-execute-persistent-action) ; swap <tab> and C-z
+;;    ("C-z" . helm-select-action))
+
+;;   :config
+;;   (setq helm-split-window-inside-p t)  ; helm window in current window
+;;   (setq helm-ff-skip-boring-files t)   ; don't show eg. temp files and vc
+;;   :diminish helm-mode)
 
 ;; Projectile
 (use-package projectile
@@ -193,23 +231,18 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 	;; projectile-svn-command "svn list -R --include-externals . | grep -v '/$' | tr '\\n' '\\0'"
 	projectile-globally-ignored-directories (append '("*__pycache__/")
 							projectile-globally-ignored-directories)
+	projectile-completion-system 'ivy
 	)
   :bind-keymap
   ("C-c p" . projectile-command-map))
 
-;; Helm-Projectile
-(use-package helm-projectile
+;; Counsel-projectile -- Integrates projectile with Ivy
+(use-package counsel-projectile
   :ensure t
-  :if
-  (and (featurep 'helm) (featurep 'projectile))
+  :if (and (featurep 'counsel) (featurep 'projectile))
   :init
-  (helm-projectile-on))
-
-;; Helm-ag
-(use-package helm-ag
-  :ensure t
-  :defer t
-  :if (featurep 'helm))
+  (counsel-projectile-mode)
+  :diminish)
 
 ;; Yasnippet
 (use-package yasnippet
@@ -362,21 +395,36 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :diminish rainbow-delimiters-mode)
 
 ;; Helm-Gtags -- helm interface to gtags.
-(use-package helm-gtags
-  :ensure t
-  :if (featurep 'helm)
-  :defer t
-  :init
-  (progn
-    ;; Set the default key mapping
-    (setq helm-gtags-prefix-key "\C-cg"
-	  helm-gtags-suggested-key-mapping t
-	  helm-gtags-ignore-case t
-	  helm-gtags-auto-update t)
+;; (use-package helm-gtags
+;;   :ensure t
+;;   :if (featurep 'helm)
+;;   :defer t
+;;   :init
+;;   (progn
+;;     ;; Set the default key mapping
+;;     (setq helm-gtags-prefix-key "\C-cg"
+;; 	  helm-gtags-suggested-key-mapping t
+;; 	  helm-gtags-ignore-case t
+;; 	  helm-gtags-auto-update t)
 
-    ;; Enable for C-like modes
-    (add-hook 'c-mode-common-hook 'helm-gtags-mode))
-  :diminish helm-gtags-mode)
+;;     ;; Enable for C-like modes
+;;     (add-hook 'c-mode-common-hook 'helm-gtags-mode))
+;;   :diminish helm-gtags-mode)
+
+;; Counsel-Gtags -- ivy interface to gtags.
+(use-package counsel-gtags
+  :ensure t
+  :if (featurep 'counsel)
+  :defer t
+  :bind (:map counsel-gtags-mode-map
+	      ("M-." . counsel-gtags-find-definition)
+	      ("M-r" . counsel-gtags-find-reference)
+	      ("M-s" . counsel-gtags-find-symbol)
+	      ("M-," . counsel-gtags-go-backward))
+  :init
+  ;; Enabled for C-like modes
+  (add-hook 'c-mode-common-hook 'counsel-gtags-mode)
+  :diminish)
 
 ;; Epub reader
 (use-package nov
