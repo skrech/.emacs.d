@@ -71,8 +71,29 @@
 	  'delete-trailing-whitespace)	       ; delete whitespaces
 (put 'dired-find-alternate-file 'disabled nil) ; reuse dired buffers
 
-;; Shows current function name
+;; Shows current function name -- in the header for modes are
+;; specified in `sch/which-function-in-header-modes'
+(defvar sch/which-function-in-header-modes '(python-mode))
+(defvar-local sch/which-function-in-mode-line t)
+
+(defun sch/which-function-in-header ()
+  "Puts which-function output in header line for the designated modes."
+  (setq sch/which-function-in-mode-line
+	(not (memq major-mode sch/which-function-in-header-modes)))
+  (unless sch/which-function-in-mode-line
+      (setq header-line-format '(" " which-func-format " "))))
+
+(defun sch/which-function-disable-mode-line ()
+  "Don't show which-function in modes that want to show it in header."
+  (let ((old-construct (assq 'which-function-mode mode-line-misc-info))
+	(misc-info (assq-delete-all 'which-function-mode mode-line-misc-info)))
+    (add-to-list 'misc-info
+		 (list 'sch/which-function-in-mode-line old-construct))
+    (setq mode-line-misc-info misc-info)))
+
+(add-hook 'after-change-major-mode-hook 'sch/which-function-in-header)
 (which-function-mode t)
+(sch/which-function-disable-mode-line)
 
 ;; find-grep-dired to not recurse in .svn folder
 ;; TODO: make it more general
