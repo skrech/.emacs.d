@@ -317,6 +317,8 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 ;; Flymake -- And shorten the mode-line string.
 (use-package flymake
   :defer t
+  :init
+  (add-hook 'emacs-lisp-mode-hook 'flymake-mode)
   :bind
   (:map flymake-mode-map
 	("M-n" . flymake-goto-next-error)
@@ -425,9 +427,12 @@ RET is the original return from the function."
   :group 'pyenv)
 
 (defun sch/restart-eglot-on-pyenv-change ()
+  "Restart eglot LSP when python version is changed."
   (and (featurep 'eglot) (eglot-ensure)))
 
 (defun sch/pyenv-modeline-function (current-python)
+  "Custom mode-line for pyenv.
+CURRENT-PYTHON - string, currently selected python version."
   `(:eval (if (eq major-mode 'python-mode)
 	      (format "|%s|" (propertize
 			      ,current-python
@@ -444,6 +449,7 @@ RET is the original return from the function."
   ;; Change mode-line func.
   (setq pyenv-modeline-function 'sch/pyenv-modeline-function)
 
+  ;; Enable global pyenv-mode
   (global-pyenv-mode)
 
   ;; Restart eglot server on change of python version.

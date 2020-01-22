@@ -11,6 +11,7 @@ customize.el
 /elpa/
 /.cask/
 /vendor/ProofGeneral*
+/straight
 
 # Recovery and backup directories
 /auto-save-list/
