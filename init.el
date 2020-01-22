@@ -77,8 +77,8 @@
            '(which-function-mode   ;Only display if mode is enabled.
                  (which-func-mode  ;Only display if buffer supports it.
                   (:eval           ;Only for major modes not derived from prog-mode
-           (unless (derived-mode-p 'prog-mode)
-             (concat (format-mode-line which-func-format) " "))))))
+		   (unless (derived-mode-p 'prog-mode)
+		     (concat (format-mode-line which-func-format) " "))))))
   (setq mode-line-misc-info misc-info))
 
 ;; find-grep-dired to not recurse in .svn folder
@@ -379,14 +379,29 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 ;;   	  (add-to-list 'company-backends 'company-anaconda)))
 
 ;; Pyenv
+(defface sch/pyenv-python-face '((t (:weight bold :foreground "Blue")))
+  "The face used to highlight the current python on the modeline."
+  :group 'pyenv)
+
 (defun sch/restart-eglot-on-pyenv-change ()
   (and (featurep 'eglot) (eglot-ensure)))
+
+(defun sch/pyenv-modeline-function (current-python)
+  `(:eval (if (eq major-mode 'python-mode)
+	      (format "|%s|" (propertize
+			      ,current-python
+			      'face
+			      'pyenv-active-python-face)))))
 
 (use-package pyenv
   :straight (:host github :repo "aiguofer/pyenv.el")
   :init
+  ;; Search in Homebrew for binaries on MacOS.
   (when (eq system-type 'darwin)
     (setq pyenv-executable "/usr/local/bin/pyenv"))
+
+  ;; Change mode-line func.
+  (setq pyenv-modeline-function 'sch/pyenv-modeline-function)
 
   (global-pyenv-mode)
 
