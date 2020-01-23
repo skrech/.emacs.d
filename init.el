@@ -181,7 +181,8 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   (ivy-mode)
   :config
   ;; ;TODO: remove this at some point - it's a workaround.
-  (setq ivy-use-virtual-buffers t)
+  (setq ivy-use-virtual-buffers t
+	ivy-count-format "(%d/%d) ")
   (defcustom ivy-use-group-face-if-no-groups t
     "If t, and the expression has no subgroups, highlight whole match as a group.
     It will then use the second face (first of the \"group\" faces)
@@ -196,13 +197,15 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :init
   (counsel-mode)
   :bind
-  (("C-c c r" . ivy-resume)
-   ("C-c c g" . counsel-git)
-   ("C-c c j" . counsel-git-grep)
-   ("C-c c L" . counsel-git-log)
-   ("C-c c l" . counsel-locate)
-   ("C-c c a" . counsel-ag)
-   ("C-c c i" . counsel-imenu))
+  (("C-x c r" . ivy-resume)
+   ("C-x c g" . counsel-git)
+   ("C-x c j" . counsel-git-grep)
+   ("C-x c L" . counsel-git-log)
+   ("C-x c l" . counsel-locate)
+   ("C-x c a" . counsel-ag)
+   ("C-x c i" . counsel-imenu))
+  :config
+  (setq counsel-ag-base-command "ag --nogroup --nocolor %s")
   :diminish counsel-mode)
 
 ;; Swiper -- Isearch on steroids using Ivy.
