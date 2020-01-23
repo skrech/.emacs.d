@@ -31,6 +31,11 @@
 (setq mac-command-modifier 'control
       mac-control-modifier 'command)
 
+;; Append Homebrew bin dir to exec-path on OSX
+(when (eq system-type 'darwin)
+  (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
+  (add-to-list 'exec-path "/usr/local/bin"))
+
 (when (eq system-type 'gnu/linux)
   (setq exec-path (cons (expand-file-name "bin" "~") exec-path)))
 
