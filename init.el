@@ -180,15 +180,8 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :init
   (ivy-mode)
   :config
-  ;; ;TODO: remove this at some point - it's a workaround.
   (setq ivy-use-virtual-buffers t
 	ivy-count-format "(%d/%d) ")
-  (defcustom ivy-use-group-face-if-no-groups t
-    "If t, and the expression has no subgroups, highlight whole match as a group.
-    It will then use the second face (first of the \"group\" faces)
-    of `ivy-minibuffer-faces'.  Otherwise, always use the first face
-    in this case."
-    :type 'boolean)
   :diminish ivy-mode)
 
 ;; Counsel -- Power replacement for Emacs' commands and some external tools.
