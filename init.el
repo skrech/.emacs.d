@@ -205,7 +205,15 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
    ("C-x c a" . counsel-ag)
    ("C-x c i" . counsel-imenu))
   :config
-  (setq counsel-ag-base-command "ag --nogroup --nocolor %s")
+  (setq counsel-ag-base-command "ag --nogroup --nocolor %s"
+	counsel-find-file-ignore-regexp (concat "\\(?:^[#.]\\)"
+						"\\|"
+						"\\(?:[#~]$\\)" ;lock/temp files
+						"\\|"
+						"\\(?:\\.pyc$\\)" ;.pyc files
+						"\\|"
+						"\\(?:^__pycache__$\\)" ;pycache
+						))
   :diminish counsel-mode)
 
 ;; Swiper -- Isearch on steroids using Ivy.
