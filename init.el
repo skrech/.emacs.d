@@ -413,7 +413,7 @@ RET is the original return from the function."
 
 ;; Python mode
 (defun sch/python-misc-config ()
-  (setq fill-column 79)
+  ;; (setq fill-column 79)
   (set (make-local-variable 'comment-inline-offset) 2))
 
 (use-package python
@@ -481,12 +481,12 @@ CURRENT-PYTHON - string, currently selected python version."
   :diminish sphinx-doc-mode)
 
 ;; Syntax highlight and fill-paragraph for docstrings.
-(use-package python-docstring
-  :ensure t
-  :defer t
-  :init
-  (add-hook 'python-mode-hook 'python-docstring-mode)
-  :diminish python-docstring-mode)
+;; (use-package python-docstring
+;;   :ensure t
+;;   :defer t
+;;   :init
+;;   (add-hook 'python-mode-hook 'python-docstring-mode)
+;;   :diminish python-docstring-mode)
 
 ;; +++-
 ;; HTTP
