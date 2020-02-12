@@ -265,6 +265,28 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   (counsel-projectile-mode)
   :diminish)
 
+;; Company-mode
+(use-package company
+  :ensure t
+  :init
+  (global-company-mode)
+  :diminish company-mode)
+
+;; Which key
+(use-package which-key
+  :ensure t
+  :init
+  (which-key-mode)
+  :diminish which-key-mode)
+
+;; Magit -- A Git Porcelain inside Emacs.
+(use-package magit
+  :ensure t
+  :init
+  (global-magit-file-mode)
+  :bind (("C-x g" . magit-status)
+	 ("C-x M-g" . magit-dispatch)))
+
 ;; Yasnippet
 (use-package yasnippet
   :ensure t
@@ -283,28 +305,6 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :config
   ;; Remove python from semantic
   (assoc-delete-all 'python-mode semantic-new-buffer-setup-functions))
-
-;; Which key
-(use-package which-key
-  :ensure t
-  :init
-  (which-key-mode)
-  :diminish which-key-mode)
-
-;; Company-mode
-(use-package company
-  :ensure t
-  :init
-  (global-company-mode)
-  :diminish company-mode)
-
-;; Flycheck
-;; (use-package flycheck
-;;   :ensure t
-;;   :init
-;;   (global-flycheck-mode)
-;;   :config
-;;   (setq flycheck-python-flake8-executable "python"))
 
 ;; Flycheck pos-tip
 ;; (use-package flycheck-pos-tip
@@ -483,7 +483,22 @@ CURRENT-PYTHON - string, currently selected python version."
 
 ;; +++-
 ;; HTTP
+
+;; Clever way of making requests.
 (use-package restclient
+  :ensure t
+  :defer t)
+
+;; HTTP requests lib.
+(use-package request
+  :ensure t
+  :defer t)
+
+;; +++-
+;; Groovy
+
+;; Groovy major mode.
+(use-package groovy-mode
   :ensure t
   :defer t)
 
@@ -530,6 +545,11 @@ CURRENT-PYTHON - string, currently selected python version."
   (add-hook 'c-mode-common-hook 'counsel-gtags-mode)
   :diminish)
 
+;; Markdown major mode.
+(use-package markdown-mode
+  :ensure t
+  :defer t)
+
 ;; Epub reader
 (use-package nov
   :ensure t
@@ -541,14 +561,6 @@ CURRENT-PYTHON - string, currently selected python version."
 ;; +++- Orgmine
 ;; +++-- Orgmine Dependencies
 (use-package elmine
-  :ensure t
-  :defer t)
-
-(use-package markdown-mode
-  :ensure t
-  :defer t)
-
-(use-package request
   :ensure t
   :defer t)
 
