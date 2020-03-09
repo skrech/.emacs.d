@@ -545,6 +545,11 @@ CURRENT-PYTHON - string, currently selected python version."
   (add-hook 'c-mode-common-hook 'counsel-gtags-mode)
   :diminish)
 
+;; Amx - smex-like sorting in counsel-M-x.
+(use-package amx
+  :ensure
+  :defer t)
+
 ;; Markdown major mode.
 (use-package markdown-mode
   :ensure t
