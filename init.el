@@ -255,7 +255,7 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 	projectile-completion-system 'ivy
 	)
   :bind-keymap
-  ("C-x p" . projectile-command-map))
+  ("C-c p" . projectile-command-map))
 
 ;; Counsel-projectile -- Integrates projectile with Ivy
 (use-package counsel-projectile
@@ -284,8 +284,15 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :ensure t
   :init
   (global-magit-file-mode)
-  :bind (("C-x g" . magit-status)
-	 ("C-x M-g" . magit-dispatch)))
+  :bind (("C-c g g" . magit-status)
+	 ("C-c g d" . magit-dispatch)
+
+	 :map magit-file-mode-map
+	 ("C-c g f" . magit-file-dispatch))
+  :config
+  (unbind-key "C-x g" magit-file-mode-map)
+  (unbind-key "C-x M-g" magit-file-mode-map)
+  (unbind-key "C-c M-g" magit-file-mode-map))
 
 ;; Yasnippet
 (use-package yasnippet
@@ -328,10 +335,9 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :defer t
   :init
   (add-hook 'emacs-lisp-mode-hook 'flymake-mode)
-  :bind
-  (:map flymake-mode-map
-	("M-n" . flymake-goto-next-error)
-	("M-p" . flymake-goto-prev-error)))
+  :bind (:map flymake-mode-map
+	      ("M-n" . flymake-goto-next-error)
+	      ("M-p" . flymake-goto-prev-error)))
 
 (defun sch/shorten-flymake-mode-line (ret)
   "Change the output of `flymake--mode-line-format'.
@@ -364,10 +370,10 @@ RET is the original return from the function."
 ;; Org-mode -- Emacs' flawless organize package.
 (use-package org
   :defer t
-  :bind (("C-x j l" . org-store-link)
-	 ("C-x j a" . org-agenda)
-	 ("C-x j c" . org-capture)
-	 ("C-x j b" . org-switchb))
+  :bind (("C-c o l" . org-store-link)
+	 ("C-c o a" . org-agenda)
+	 ("C-c o c" . org-capture)
+	 ("C-c o b" . org-switchb))
   :config
   (setq org-directory "~/org"
 	org-default-notes-file (concat org-directory "/refile.org")
@@ -463,7 +469,7 @@ CURRENT-PYTHON - string, currently selected python version."
 
   ;; Restart eglot server on change of python version.
   (add-hook 'pyenv-mode-hook 'sch/restart-eglot-on-pyenv-change)
-  :bind (("C-x M-v" . pyenv-use)))
+  :bind (("C-c v" . pyenv-use)))
 
 ;; Sphinx docstrings generation
 (use-package sphinx-doc
