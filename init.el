@@ -396,8 +396,9 @@ RET is the original return from the function."
 (use-package eglot
   :ensure t
   :defer t
-  :init
-  (add-hook 'python-mode-hook 'eglot-ensure))
+  :hook
+  ((python-mode . eglot-ensure)
+   (typescript-mode . eglot-ensure)))
 
 ;; +++-
 ;; Clojure
@@ -419,22 +420,6 @@ RET is the original return from the function."
   :defer t
   :init
   (add-hook 'python-mode-hook 'sch/python-misc-config))
-
-;; Anaconda-mode
-;; (use-package anaconda-mode
-;;   :ensure t
-;;   :defer t
-;;   :init
-;;   (add-hook 'python-mode-hook 'anaconda-mode)
-;;   (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
-;;   :diminish anaconda-mode)
-
-;; Anacoda company backend
-;; (use-package company-anaconda
-;;   :ensure t
-;;   :defer t
-;;   :init (with-eval-after-load 'company
-;;   	  (add-to-list 'company-backends 'company-anaconda)))
 
 ;; Pyenv
 (defface sch/pyenv-face '((t (:weight bold :foreground "#de935f")))
@@ -486,6 +471,12 @@ CURRENT-PYTHON - string, currently selected python version."
 ;;   :init
 ;;   (add-hook 'python-mode-hook 'python-docstring-mode)
 ;;   :diminish python-docstring-mode)
+
+;; +++-
+;; Angular
+(use-package ng2-mode
+  :ensure t
+  :defer t)
 
 ;; +++-
 ;; HTTP
