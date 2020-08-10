@@ -473,6 +473,15 @@ CURRENT-PYTHON - string, currently selected python version."
 ;;   :diminish python-docstring-mode)
 
 ;; +++-
+;; Typescript
+(use-package typescript-mode
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'typescript-mode-hook
+	    (lambda () (setq indent-tabs-mode nil))))
+
+;; +++-
 ;; Angular
 (use-package ng2-mode
   :ensure t
