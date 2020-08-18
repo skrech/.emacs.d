@@ -351,6 +351,15 @@ RET is the original return from the function."
 (advice-add 'flymake--mode-line-format
 	    :filter-return 'sch/shorten-flymake-mode-line)
 
+;; Spell-checking
+(use-package flyspell
+  :defer t
+  :init
+  (progn
+    (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+    (add-hook 'text-mode-hook 'flyspell-mode))
+  :diminish)
+
 ;; ElDoc -- just diminish the minor mode.
 (use-package eldoc
   :defer t
@@ -562,6 +571,9 @@ CURRENT-PYTHON - string, currently selected python version."
 ;; Markdown major mode.
 (use-package markdown-mode
   :ensure t
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
   :defer t)
 
 ;; Epub reader
