@@ -465,6 +465,15 @@ CURRENT-PYTHON - string, currently selected python version."
 ;;   :diminish python-docstring-mode)
 
 ;; +++-
+;; Shell script
+(use-package flymake-shellcheck
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'sh-mode-hook 'flymake-shellcheck-load)
+  (add-hook 'sh-mode-hook 'flymake-mode))
+
+;; +++-
 ;; Typescript
 (use-package typescript-mode
   :ensure t
