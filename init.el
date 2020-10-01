@@ -182,10 +182,16 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :ensure t
   :init
   (ivy-mode)
+  :bind (:map ivy-minibuffer-map
+	      ([tab] . ivy-alt-done))
   :config
   (setq ivy-use-virtual-buffers t
 	ivy-count-format "(%d/%d) ")
   :diminish ivy-mode)
+
+;; Ivy Hydra
+(use-package ivy-hydra
+  :ensure t)
 
 ;; Counsel -- Power replacement for Emacs' commands and some external tools.
 (use-package counsel
@@ -218,30 +224,6 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :bind
   (("C-s" . swiper-isearch)
    ("M-s ." . swiper-isearch-thing-at-point)))
-
-;; Helm
-;; (use-package helm
-;;   :ensure t
-;;   :init
-;;   (require 'helm-config)		; adds C-x c prefix
-;;   (helm-mode 1)				; start helm mode
-
-;;   :bind
-;;   (("M-x" . helm-M-x)
-;;    ("C-x C-f" . helm-find-files)
-;;    ("C-x C-b" . helm-buffers-list)
-;;    ("C-x b" . helm-mini)
-;;    ("M-y" . helm-show-kill-ring)
-;;    ("M-s o" . helm-occur)
-
-;;    :map helm-map
-;;    ("<tab>" . helm-execute-persistent-action) ; swap <tab> and C-z
-;;    ("C-z" . helm-select-action))
-
-;;   :config
-;;   (setq helm-split-window-inside-p t)  ; helm window in current window
-;;   (setq helm-ff-skip-boring-files t)   ; don't show eg. temp files and vc
-;;   :diminish helm-mode)
 
 ;; Projectile
 (use-package projectile
