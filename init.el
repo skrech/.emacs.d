@@ -336,10 +336,8 @@ RET is the original return from the function."
 ;; Spell-checking
 (use-package flyspell
   :defer t
-  :init
-  (progn
-    (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-    (add-hook 'text-mode-hook 'flyspell-mode))
+  :hook
+  ((org-mode markdown-mode) . flyspell-mode)
   :diminish)
 
 ;; ElDoc -- just diminish the minor mode.
