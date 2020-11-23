@@ -154,7 +154,10 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 (setq package-archives
       ;; Package archives
       '(("GNU ELPA" . "http://elpa.gnu.org/packages/")
-        ("MELPA"    . "https://melpa.org/packages/")))
+        ("MELPA"    . "https://melpa.org/packages/")
+	;; I use IP address here because of Company policy to block
+	;; Vulture Hosting.
+	("ORG" . "http://45.77.159.66/elpa/")))
 
 ;; Init ELPA
 (setq package-enable-at-startup nil)    ; Do not init packages after init file
@@ -267,17 +270,9 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 ;; Magit -- A Git Porcelain inside Emacs.
 (use-package magit
   :ensure t
-  :init
-  (global-magit-file-mode)
   :bind (("C-c g g" . magit-status)
 	 ("C-c g d" . magit-dispatch)
-
-	 :map magit-file-mode-map
-	 ("C-c g f" . magit-file-dispatch))
-  :config
-  (unbind-key "C-x g" magit-file-mode-map)
-  (unbind-key "C-x M-g" magit-file-mode-map)
-  (unbind-key "C-c M-g" magit-file-mode-map))
+	 ("C-c g f" . magit-file-dispatch)))
 
 ;; Yasnippet
 (use-package yasnippet
@@ -297,13 +292,6 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :config
   ;; Remove python from semantic
   (assoc-delete-all 'python-mode semantic-new-buffer-setup-functions))
-
-;; Flycheck pos-tip
-;; (use-package flycheck-pos-tip
-;;   :ensure t
-;;   :init
-;;   (with-eval-after-load 'flycheck
-;;     (flycheck-pos-tip-mode)))
 
 ;;  Diminish - needed for proper work of use-package
 (use-package diminish
@@ -348,20 +336,16 @@ RET is the original return from the function."
 ;; Subword -- allows to move on sub-word in CamelCase
 (use-package subword
   :defer t
-  :init
-  (progn
-    ;; Enable for Python mode
-    (add-hook 'python-mode-hook 'subword-mode)
-
-    ;; Enable for Clojure mode
-    (add-hook 'clojure-mode-hook 'subword-mode)
-
-    ;; Enable for C-like modes
-    (add-hook 'c-mode-common-hook 'subword-mode)))
+  :hook
+  ((python-mode clojure-mode c-mode-common typescript-mode) . subword-mode))
 
 ;; Org-mode -- Emacs' flawless organize package.
-(use-package org
+(use-package org-plus-contrib
   :defer t
+  :ensure
+  :init
+  (with-eval-after-load "org"
+    (require 'ox-confluence))
   :bind (("C-c o l" . org-store-link)
 	 ("C-c o a" . org-agenda)
 	 ("C-c o c" . org-capture)
