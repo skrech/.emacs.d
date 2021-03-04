@@ -37,7 +37,13 @@
   (add-to-list 'exec-path "/usr/local/bin")
 
   ;; Enable emoji for macOS
-  (set-fontset-font t 'symbol "Apple Color Emoji" nil 'prepend))
+  (set-fontset-font t 'symbol "Apple Color Emoji" nil 'prepend)
+
+  ;; Force en_US.UTF-8 locale because macOS creates en_BG.UTF-8 when
+  ;; selecting English as main language and Bulgaria as
+  ;; Region. However, this locale is not defined (checked with "locale
+  ;; -a")
+  (setenv "LANG" "en_US.UTF-8"))
 
 (when (eq system-type 'gnu/linux)
   (setq exec-path (cons (expand-file-name "bin" "~") exec-path)))
@@ -293,9 +299,16 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   ;; Remove python from semantic
   (assoc-delete-all 'python-mode semantic-new-buffer-setup-functions))
 
-;;  Diminish - needed for proper work of use-package
+;; Diminish - needed for proper work of use-package
 (use-package diminish
   :ensure t)
+
+;; EditorConfig support
+(use-package editorconfig
+  :ensure t
+  :config
+  (editorconfig-mode 1)
+  :diminish)
 
 ;; +++
 ;; Deffered
