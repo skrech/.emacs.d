@@ -163,7 +163,7 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
         ("MELPA"    . "https://melpa.org/packages/")
 	;; I use IP address here because of Company policy to block
 	;; Vulture Hosting.
-	("ORG" . "http://45.77.159.66/elpa/")))
+	("ORG" . "http://orgmode.org/elpa/")))
 
 ;; Init ELPA
 (setq package-enable-at-startup nil)    ; Do not init packages after init file
@@ -378,7 +378,12 @@ RET is the original return from the function."
 				("n" "Note" entry (file "notes.org")
 				 "* %?\n  Logged on: %u"))
 
-	org-refile-targets '((org-agenda-files . (:level . 1)))))
+	org-refile-targets '((org-agenda-files . (:level . 1))))
+
+  ;; Load babel evaluation languages support.
+  (org-babel-do-load-languages 'org-babel-load-languages
+			       '((emacs-lisp . t)
+				 (plantuml . t))))
 
 ;; +++-
 ;; LSP Client -- common for many languages.
@@ -561,6 +566,16 @@ CURRENT-PYTHON - string, currently selected python version."
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
   :defer t)
+
+;; PlantUML major mode.
+(use-package plantuml-mode
+  :ensure t
+  :mode "\\.plantuml\\'"
+  :config
+  (setq plantuml-default-exec-mode 'executable)
+
+  ;; Integrate with org-mode editing
+  (add-to-list 'org-src-lang-modes '("plantuml" . plantuml)))
 
 ;; Epub reader
 (use-package nov
