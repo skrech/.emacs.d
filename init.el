@@ -363,17 +363,15 @@ RET is the original return from the function."
   ((python-mode clojure-mode c-mode-common typescript-mode) . subword-mode))
 
 ;; Org-mode -- Emacs' flawless organize package.
-(use-package org-plus-contrib
+(use-package org
   :defer t
-  :ensure
-  :init
-  (with-eval-after-load "org"
-    (require 'ox-confluence))
+  :ensure org-plus-contrib
   :bind (("C-c o l" . org-store-link)
 	 ("C-c o a" . org-agenda)
 	 ("C-c o c" . org-capture)
 	 ("C-c o b" . org-switchb))
   :config
+  (require 'ox-confluence)
   (setq org-directory "~/org"
 	org-default-notes-file (concat org-directory "/refile.org")
 
@@ -388,7 +386,8 @@ RET is the original return from the function."
 				("n" "Note" entry (file "notes.org")
 				 "* %?\n  Logged on: %u"))
 
-	org-refile-targets '((org-agenda-files . (:level . 1))))
+	org-refile-targets '((org-agenda-files . (:level . 1)))
+	org-plantuml-exec-mode 'plantuml)
 
   ;; Load babel evaluation languages support.
   (org-babel-do-load-languages 'org-babel-load-languages
