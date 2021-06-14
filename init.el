@@ -195,7 +195,8 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 	      ([tab] . ivy-alt-done))
   :config
   (setq ivy-use-virtual-buffers t
-	ivy-count-format "(%d/%d) ")
+	ivy-count-format "(%d/%d) "
+	ivy-on-del-error-function 'ignore)
   :diminish ivy-mode)
 
 ;; Ivy Hydra
