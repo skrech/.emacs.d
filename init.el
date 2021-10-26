@@ -348,7 +348,7 @@ RET is the original return from the function."
 (use-package flyspell
   :defer t
   :hook
-  ((org-mode markdown-mode) . flyspell-mode)
+  (text-mode . flyspell-mode)
   :diminish)
 
 ;; ElDoc -- just diminish the minor mode.
