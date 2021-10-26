@@ -360,7 +360,7 @@ RET is the original return from the function."
 (use-package subword
   :defer t
   :hook
-  ((python-mode clojure-mode c-mode-common typescript-mode) . subword-mode))
+  ((python-mode clojure-mode c-mode-common typescript-mode org-mode) . subword-mode))
 
 ;; Org-mode -- Emacs' flawless organize package.
 (use-package org
@@ -371,12 +371,22 @@ RET is the original return from the function."
 	 ("C-c o c" . org-capture)
 	 ("C-c o b" . org-switchb))
   :config
-  (require 'ox-confluence)
+  ;; Use enhanced exporter if available
+  (if (require 'ox-confluence-en nil t)
+      ;; In current work place, Confluence doen't support PlantUML, so
+      ;; disable macro export.
+      (setq ox-confluence-en-use-plantuml-macro nil)
+    (require 'ox-confluence))
   (setq org-directory "~/org"
-	org-default-notes-file (concat org-directory "/refile.org")
 
-	;; Search for agenda files in this file.
-	org-agenda-files (concat org-directory "/agenda_files")
+	;; TODO keywords colours
+	org-todo-keyword-faces '(("TODO" . org-warning)
+				 ("PRG" . "yellow")
+				 ("WAIT" . "orange")
+				 ("DONE" . org-done))
+
+	;; File to keep the captured items
+	org-default-notes-file (concat org-directory "/refile.org")
 
 	;; Custom capture templates.
 	;; NOTE: This is variable from package org-capture...
@@ -385,6 +395,14 @@ RET is the original return from the function."
 
 				("n" "Note" entry (file "notes.org")
 				 "* %?\n  Logged on: %u"))
+
+	;; Agenda config
+	org-agenda-files (concat org-directory "/agenda_files")
+	org-agenda-restore-windows-after-quit t
+	org-agenda-todo-list-sublevels nil
+	;;; In TODO View of agenda, make visible only "open" (with not
+	;;; active timestamp) TODOs
+	org-agenda-todo-ignore-with-date t
 
 	org-refile-targets '((org-agenda-files . (:level . 1)))
 	org-plantuml-exec-mode 'plantuml)
@@ -399,6 +417,7 @@ RET is the original return from the function."
 (use-package eglot
   :ensure t
   :defer t
+  :bind (("C-c e f" . eglot-format))
   :hook
   ((python-mode . eglot-ensure)
    (typescript-mode . eglot-ensure)))
@@ -595,7 +614,7 @@ CURRENT-PYTHON - string, currently selected python version."
 ;; +++
 ;; Installed from source
 ;; +++- Orgmine
-;; +++-- Orgmine Dependencies
+;; + ++-- Orgmine Dependencies
 (use-package elmine
   :ensure t
   :defer t)
@@ -604,7 +623,7 @@ CURRENT-PYTHON - string, currently selected python version."
 			  (expand-file-name
 			   "local-sources"
 			   user-emacs-directory))))
-  ;; Add the path to source in load-path
+  ;; Orgmine
   (add-to-list 'load-path (file-name-as-directory
 			   (expand-file-name
 			    "orgmine"
@@ -613,6 +632,12 @@ CURRENT-PYTHON - string, currently selected python version."
     (add-hook 'org-mode-hook
 	      (lambda () (if (assoc "om_project" org-file-properties)
 			     (orgmine-mode))))
-    (require 'orgmine-config)))
+    (require 'orgmine-config))
+
+  ;; Confluence enhanced exporter
+  (add-to-list 'load-path (file-name-as-directory
+			   (expand-file-name
+			    "ox-confluence-en"
+			    local-sources-dir))))
 
 ;;; init.el ends here
