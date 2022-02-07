@@ -33,8 +33,11 @@
 
 ;; Append Homebrew bin dir to exec-path on OSX
 (when (eq system-type 'darwin)
-  (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
+  (setenv "PATH" (concat "/usr/local/bin:"
+			 (expand-file-name "~/go/bin:")
+			 (getenv "PATH")))
   (add-to-list 'exec-path "/usr/local/bin")
+  (add-to-list 'exec-path (expand-file-name "~/go/bin"))
 
   ;; Enable emoji for macOS
   (set-fontset-font t 'symbol "Apple Color Emoji" nil 'prepend)
