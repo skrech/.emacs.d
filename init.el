@@ -490,12 +490,12 @@ CURRENT-PYTHON - string, currently selected python version."
   :diminish sphinx-doc-mode)
 
 ;; Syntax highlight and fill-paragraph for docstrings.
-;; (use-package python-docstring
-;;   :ensure t
-;;   :defer t
-;;   :init
-;;   (add-hook 'python-mode-hook 'python-docstring-mode)
-;;   :diminish python-docstring-mode)
+(use-package python-docstring
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'python-mode-hook 'python-docstring-mode)
+  :diminish python-docstring-mode)
 
 ;; +++-
 ;; Shell script
