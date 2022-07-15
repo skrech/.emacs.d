@@ -163,10 +163,7 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 (setq package-archives
       ;; Package archives
       '(("GNU ELPA" . "http://elpa.gnu.org/packages/")
-        ("MELPA"    . "https://melpa.org/packages/")
-	;; I use IP address here because of Company policy to block
-	;; Vulture Hosting.
-	("ORG" . "http://orgmode.org/elpa/")))
+        ("MELPA"    . "https://melpa.org/packages/")))
 
 ;; Init ELPA
 (setq package-enable-at-startup nil)    ; Do not init packages after init file
@@ -368,7 +365,6 @@ RET is the original return from the function."
 ;; Org-mode -- Emacs' flawless organize package.
 (use-package org
   :defer t
-  :ensure org-plus-contrib
   :bind (("C-c o l" . org-store-link)
 	 ("C-c o a" . org-agenda)
 	 ("C-c o c" . org-capture)
@@ -544,6 +540,12 @@ CURRENT-PYTHON - string, currently selected python version."
 
 ;; +++-
 ;; Misc
+
+;; Org community contributions
+(use-package org-contrib
+  :straight t
+  :ensure t
+  :defer t)
 
 ;; Rainbow-Delimiters -- colors parentheses in programming modes.
 (use-package rainbow-delimiters
