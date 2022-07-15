@@ -274,6 +274,10 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
   :ensure t
   :init
   (global-company-mode)
+  :config
+  (setq company-show-quick-access t)
+  :bind
+  (("C-c a" . company-complete-tooltip-row))
   :diminish company-mode)
 
 ;; Which key
