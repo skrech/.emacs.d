@@ -535,8 +535,21 @@ CURRENT-PYTHON - string, currently selected python version."
   :defer t)
 
 ;; +++-
-;; Groovy
+;; Dockerfile
+(use-package dockerfile-mode
+  :ensure t
+  :defer t
+  :config
+  (setq dockerfile-enable-auto-indent nil))
 
+
+;; +++-
+;; Rego Policy Major Mode
+(use-package rego-mode
+  :ensure t
+  :defer t)
+
+;; +++-
 ;; Groovy major mode.
 (use-package groovy-mode
   :ensure t
