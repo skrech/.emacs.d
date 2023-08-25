@@ -661,6 +661,7 @@ CURRENT-PYTHON - string, currently selected python version."
   :mode "\\.plantuml\\'"
   :config
   (setq plantuml-default-exec-mode 'executable)
+  (setq plantuml-output-type "png")
 
   ;; Integrate with org-mode editing
   (add-to-list 'org-src-lang-modes '("plantuml" . plantuml)))
@@ -678,6 +679,7 @@ CURRENT-PYTHON - string, currently selected python version."
 (use-package elmine
   :ensure t
   :defer t)
+
 
 (let ((local-sources-dir (file-name-as-directory
 			  (expand-file-name
