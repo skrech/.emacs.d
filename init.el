@@ -456,14 +456,18 @@ RET is the original return from the function."
 ;; Python
 
 ;; Python mode
-(defun sch/python-misc-config ()
-  ;; (setq fill-column 79)
+(defun sch/python-inline-comment-offset ()
+  "Set inline offset for comments in Python buffers."
   (set (make-local-variable 'comment-inline-offset) 2))
 
 (use-package python
   :defer t
   :init
-  (add-hook 'python-mode-hook 'sch/python-misc-config))
+  (add-hook 'python-mode-hook 'sch/python-inline-comment-offset)
+  :config
+  ;; Make indentation compatible with black
+  (setq python-indent-def-block-scale 1))
+
 
 ;; Pyenv
 (defface sch/pyenv-face '((t (:weight bold :foreground "#de935f")))
