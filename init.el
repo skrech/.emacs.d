@@ -441,6 +441,7 @@ RET is the original return from the function."
   :bind (("C-c e f" . eglot-format))
   :hook
   ((python-mode . eglot-ensure)
+   (go-mode . eglot-ensure)
    (typescript-mode . eglot-ensure)))
 
 ;; +++-
