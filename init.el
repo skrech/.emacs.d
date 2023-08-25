@@ -565,6 +565,21 @@ CURRENT-PYTHON - string, currently selected python version."
   :config
   (setq dockerfile-enable-auto-indent nil))
 
+;; +++-
+;; Kubernetes (old)
+;; (use-package kubernetes
+;;   :ensure t
+;;   :commands (kubernetes-overview))
+
+;; +++-
+;; Kubernetes
+(use-package kele
+  :ensure t
+  :bind-keymap
+  ("C-c k" . kele-command-map)
+  :config
+  ;; Temporary force kubeconfig to the default one
+  (setq kele-kubeconfig-path "~/.kube/config"))
 
 ;; +++-
 ;; Rego Policy Major Mode
