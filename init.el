@@ -422,7 +422,10 @@ RET is the original return from the function."
 	;;; active timestamp) TODOs
 	org-agenda-todo-ignore-with-date t
 
-	org-refile-targets '((org-agenda-files . (:level . 1)))
+	org-refile-targets '((org-agenda-files . (:regexp . "Tasks$"))
+			     (org-agenda-files . (:level . 1)))
+	org-refile-use-outline-path t
+	org-outline-path-complete-in-steps nil
 	org-plantuml-exec-mode 'plantuml)
 
   ;; Load babel evaluation languages support.
