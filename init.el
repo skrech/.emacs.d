@@ -565,12 +565,12 @@ CURRENT-PYTHON - string, currently selected python version."
   :defer t)
 
 ;; Rainbow-Delimiters -- colors parentheses in programming modes.
-(use-package rainbow-delimiters
-  :ensure t
-  :defer t
-  :init
-  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
-  :diminish rainbow-delimiters-mode)
+;; (use-package rainbow-delimiters
+;;   :ensure t
+;;   :defer t
+;;   :init
+;;   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+;;   :diminish rainbow-delimiters-mode)
 
 ;; Helm-Gtags -- helm interface to gtags.
 ;; (use-package helm-gtags
