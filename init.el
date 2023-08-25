@@ -182,10 +182,24 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 ;; Always-on
 
 ;; Themes
-(use-package color-theme-sanityinc-tomorrow
+;; (use-package color-theme-sanityinc-tomorrow
+;;   :ensure t
+;;   :init
+;;   (load-theme 'sanityinc-tomorrow-eighties t))
+
+(use-package solarized-theme
   :ensure t
   :init
-  (load-theme 'sanityinc-tomorrow-eighties t))
+  ;; Don't change the font for some headings and titles
+  ;; (setq solarized-use-variable-pitch nil)
+  ;; Remove scaling of fonts
+  ;; (setq solarized-scale-org-headlines nil
+  ;; 	solarized-height-minus-1 1.0
+  ;; 	solarized-height-plus-1 1.0
+  ;; 	solarized-height-plus-2 1.0
+  ;; 	solarized-height-plus-3 1.0
+  ;; 	solarized-height-plus-4 1.0)
+  (load-theme 'solarized-light t))
 
 ;; Ivy -- Completion mechanism.
 (use-package ivy
