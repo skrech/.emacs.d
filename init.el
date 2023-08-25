@@ -28,8 +28,9 @@
 ;; Swap Command and Control keys on OSX because if we use Mac with
 ;; their own keyboard and we remapped these keys in System
 ;; Preferences.
-(setq mac-command-modifier 'control
-      mac-control-modifier 'command)
+(setq mac-command-modifier 'meta
+      mac-option-modifier 'super
+      mac-right-option-modifier 'control)
 
 ;; Append Homebrew bin dir to exec-path on OSX
 (when (eq system-type 'darwin)
