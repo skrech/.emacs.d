@@ -552,6 +552,16 @@ CURRENT-PYTHON - string, currently selected python version."
   :ensure t
   :defer t)
 
+;; Support for 'jq'-based hooks in 'restclient'
+(use-package restclient-jq
+  :ensure t
+  :after restclient) ; note: `:after' uses eval-after-load; `:defer' should not be combined with `:after'!
+
+;; jq-mode -- mainly as dependency for restclient-jq
+(use-package jq-mode
+  :ensure t
+  :defer t)
+
 ;; HTTP requests lib.
 (use-package request
   :ensure t
