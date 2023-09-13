@@ -489,6 +489,7 @@ CURRENT-PYTHON - string, currently selected python version."
 
 (use-package pyenv
   :straight (:host github :repo "aiguofer/pyenv.el")
+  :defer t
   :init
   ;; Search in Homebrew for binaries on MacOS.
   (when (eq system-type 'darwin)
@@ -497,12 +498,11 @@ CURRENT-PYTHON - string, currently selected python version."
   ;; Change mode-line func.
   (setq pyenv-modeline-function 'sch/pyenv-modeline-function)
 
-  ;; Enable global pyenv-mode
-  (global-pyenv-mode)
-
   ;; Restart eglot server on change of python version.
-  (add-hook 'pyenv-mode-hook 'sch/restart-eglot-on-pyenv-change)
-  :bind (("C-c v" . pyenv-use)))
+  ;; (add-hook 'pyenv-mode-hook 'sch/restart-eglot-on-pyenv-change)
+  :bind (("C-c v" . pyenv-use))
+  :hook ((python-mode . global-pyenv-mode)
+	 (pyenv-mode . sch/restart-eglot-on-pyenv-change)))
 
 ;; Sphinx docstrings generation
 (use-package sphinx-doc
