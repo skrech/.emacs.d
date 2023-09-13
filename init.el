@@ -550,7 +550,7 @@ CURRENT-PYTHON - string, currently selected python version."
 ;; Clever way of making requests.
 (use-package restclient
   :ensure t
-  :defer t)
+  :mode ("\\.restclient\\'" . restclient-mode))
 
 ;; Support for 'jq'-based hooks in 'restclient'
 (use-package restclient-jq
