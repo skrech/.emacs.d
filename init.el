@@ -490,6 +490,7 @@ CURRENT-PYTHON - string, currently selected python version."
 (use-package pyenv
   :straight (:host github :repo "aiguofer/pyenv.el")
   :defer t
+  :if (executable-find "pyenv")
   :init
   ;; Search in Homebrew for binaries on MacOS.
   (when (eq system-type 'darwin)
@@ -498,10 +499,12 @@ CURRENT-PYTHON - string, currently selected python version."
   ;; Change mode-line func.
   (setq pyenv-modeline-function 'sch/pyenv-modeline-function)
 
-  ;; Restart eglot server on change of python version.
-  ;; (add-hook 'pyenv-mode-hook 'sch/restart-eglot-on-pyenv-change)
+  ;; TODO: See the comment below for deferring.
+  (global-pyenv-mode 1)
   :bind (("C-c v" . pyenv-use))
-  :hook ((python-mode . global-pyenv-mode)
+  :hook (
+	 ;; TODO: Find a way to properly defer activating the global minor mode.
+	 ;; (python-mode . global-pyenv-mode)
 	 (pyenv-mode . sch/restart-eglot-on-pyenv-change)))
 
 ;; Sphinx docstrings generation
