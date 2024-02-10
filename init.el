@@ -492,9 +492,8 @@ CURRENT-PYTHON - string, currently selected python version."
   :defer t
   :if (executable-find "pyenv")
   :init
-  ;; Search in Homebrew for binaries on MacOS.
-  (when (eq system-type 'darwin)
-    (setq pyenv-executable "/usr/local/bin/pyenv"))
+  ;; Search for the executable in PATH (why isn't this the default)
+  (setq pyenv-executable "pyenv")
 
   ;; Change mode-line func.
   (setq pyenv-modeline-function 'sch/pyenv-modeline-function)
