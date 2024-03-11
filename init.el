@@ -306,15 +306,15 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 	 ("C-c g f" . magit-file-dispatch)))
 
 ;; Yasnippet
+(use-package yasnippet-snippets
+  :ensure t)
+
 (use-package yasnippet
   :ensure t
+  :after (yasnippet-snippets)
   :init
   (yas-global-mode)
   :diminish yas-minor-mode)
-
-(use-package yasnippet-snippets
-  :ensure t
-  :if (featurep 'yasnippet))
 
 ;; Semantic - Source code lexical analysis from CEDET
 (use-package semantic
