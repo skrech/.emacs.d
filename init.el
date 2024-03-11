@@ -519,6 +519,11 @@ CURRENT-PYTHON - string, currently selected python version."
   :diminish python-docstring-mode)
 
 ;; +++-
+;; SQL
+(use-package sql-indent
+  :ensure t)
+
+;; +++-
 ;; Shell script
 (use-package flymake-shellcheck
   :ensure t
