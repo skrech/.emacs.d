@@ -166,10 +166,6 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
       '(("GNU ELPA" . "http://elpa.gnu.org/packages/")
         ("MELPA"    . "https://melpa.org/packages/")))
 
-;; Init ELPA
-(setq package-enable-at-startup nil)    ; Do not init packages after init file
-(package-initialize)                    ; Init ELPA packages
-
 ;; Bootstrap use-package
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)		; refresh packages cache
