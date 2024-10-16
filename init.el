@@ -449,6 +449,13 @@ RET is the original return from the function."
   (add-hook 'clojure-mode-hook 'cider-mode))
 
 ;; +++-
+;; Guile Scheme
+(use-package geiser-guile
+  :ensure t
+  :defer t
+  :hook (scheme-mode . geiser-mode))
+
+;; +++-
 ;; Python
 
 ;; Python mode
