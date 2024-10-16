@@ -440,6 +440,20 @@ RET is the original return from the function."
    (go-mode . eglot-ensure)
    (typescript-mode . eglot-ensure)))
 
+;; +++- Lisp Modes
+(use-package paredit
+  :ensure t
+  :defer t
+  :bind (:map paredit-mode-map
+	 ("M-s" . nil)
+	 ("M-r" . nil)
+	 ("M-?" . nil)
+	 ("C-c e s" . paredit-splice-sexp)
+	 ("C-c e r" . paredit-raise-sexp)
+	 ("C-c e c" . paredit-convolute-sexp))
+  :hook (lisp-mode emacs-lisp-mode clojure-mode)
+  :diminish)
+
 ;; +++-
 ;; Clojure
 (use-package cider
