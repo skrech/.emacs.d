@@ -434,7 +434,8 @@ RET is the original return from the function."
 (use-package eglot
   :ensure t
   :defer t
-  :bind (("C-c e f" . eglot-format))
+  :bind (:map eglot-mode-map
+	 ("C-c e f" . eglot-format))
   :hook
   ((python-mode . eglot-ensure)
    (go-mode . eglot-ensure)
