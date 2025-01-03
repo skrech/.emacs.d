@@ -137,6 +137,35 @@ RETURN-STRING - the string returned by vc-git-mode-line-string."
 	    'shorten-git-mode-line)
 
 ;; ----
+;; Tree-sitter
+
+(require 'treesit nil 'noerror)
+
+(defun sch/treesit-available-p (&optional lang)
+  "Check if current Emacs is built with tree-sitter support.
+LANG might be supplied (a symbol), which will additionally check if
+that language is available for tree-sitter."
+  (when (featurep 'treesit)
+    (if lang
+	(treesit-ready-p lang)
+      (treesit-available-p))))
+
+(defun sch/setup-treesit-grammers ()
+  "Configure Tree-Sitter grammer sources alist and install grammers.
+Will execute only if Tree-Sitter is actually available."
+  (if (sch/treesit-available-p)
+      (progn
+	(setq treesit-language-source-alist
+	      '((elixir "https://github.com/elixir-lang/tree-sitter-elixir")
+		(heex "https://github.com/phoenixframework/tree-sitter-heex")))
+	;; Install the grammers (if not already installed)
+	(mapc #'treesit-install-language-grammar
+	      (mapcar #'car treesit-language-source-alist)))
+    (message "Tree-Sitter not available. Skipping its initialization.")))
+
+(sch/setup-treesit-grammers)
+
+;; ----
 ;; Straight
 
 ;; Disable straight.el customization hacks.
@@ -469,6 +498,20 @@ RET is the original return from the function."
   :ensure t
   :defer t
   :hook (scheme-mode . geiser-mode))
+
+;; +++-
+;; Elixir
+(use-package elixir-ts-mode
+  :ensure t
+  :defer t
+  :if (sch/treesit-available-p 'elixir)
+  :init
+  ;; Emacs 30 has builtin support for `elixir-mode' and
+  ;; `elixir-ts-mode', so we only remap. Older versions of Emacs will
+  ;; automatically update 'auto-mode-alist' from the autoloads in the
+  ;; (backported/this) MELPA package.
+  (when (>= emacs-major-version 30)
+    (push '(elixir-mode . elixir-ts-mode) major-mode-remap-alist)))
 
 ;; +++-
 ;; Python
