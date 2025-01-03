@@ -7,6 +7,7 @@
 
 ;; ------------------------
 ;; Emacs Customization file
+
 (setq custom-file (expand-file-name "customize.el" user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file))
@@ -14,8 +15,9 @@
 ;; ------------
 ;; OS-dependent
 
-;; Append MSYS2 to PATH on Windows
+;; Windows
 (when (or (eq system-type 'windows-nt) (eq system-type 'msdos))
+  ;; Append MSYS2 to PATH on Windows
   (setenv "PATH" (concat "C:\\msys64\\mingw64\\bin;" (getenv "PATH")))
   (setq exec-path (append '("C:\\msys64\\mingw64\\bin") exec-path))
 
@@ -25,15 +27,16 @@
   ;; Fix 'find' listing on Windows
   (setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))
 
-;; Swap Command and Control keys on OSX because if we use Mac with
-;; their own keyboard and we remapped these keys in System
-;; Preferences.
-(setq mac-command-modifier 'meta
-      mac-option-modifier 'super
-      mac-right-option-modifier 'control)
-
-;; Append Homebrew bin dir to exec-path on OSX
+;; MacOS
 (when (eq system-type 'darwin)
+  ;; Swap Command and Control keys on OSX because if we use Mac with
+  ;; their own keyboard and we remapped these keys in System
+  ;; Preferences.
+  (setq mac-command-modifier 'meta
+	mac-option-modifier 'super
+	mac-right-option-modifier 'control)
+
+  ;; Append Homebrew bin dir to exec-path on OSX
   (setenv "PATH" (concat "/usr/local/bin:"
 			 (expand-file-name "~/go/bin:")
 			 (getenv "PATH")))
@@ -88,14 +91,14 @@
 (defvar-local sch/which-function-in-mode-line t)
 
 (defun sch/which-function-in-header ()
-  "Puts which-function output in header line for the designated modes."
+  "Puts `which-function' output in header line for the designated modes."
   (setq sch/which-function-in-mode-line
 	(not (memq major-mode sch/which-function-in-header-modes)))
   (unless sch/which-function-in-mode-line
       (setq header-line-format '(" " which-func-format " "))))
 
 (defun sch/which-function-disable-mode-line ()
-  "Don't show which-function in modes that want to show it in header."
+  "Don't show `which-function' in modes that want to show it in header."
   (let ((old-construct (assq 'which-function-mode mode-line-misc-info))
 	(misc-info (assq-delete-all 'which-function-mode mode-line-misc-info)))
     (add-to-list 'misc-info
@@ -475,12 +478,12 @@ RET is the original return from the function."
   :ensure t
   :defer t
   :bind (:map paredit-mode-map
-	 ("M-s" . nil)
-	 ("M-r" . nil)
-	 ("M-?" . nil)
-	 ("C-c e s" . paredit-splice-sexp)
-	 ("C-c e r" . paredit-raise-sexp)
-	 ("C-c e c" . paredit-convolute-sexp))
+	      ("M-s" . nil)
+	      ("M-r" . nil)
+	      ("M-?" . nil)
+	      ("C-c e s" . paredit-splice-sexp)
+	      ("C-c e r" . paredit-raise-sexp)
+	      ("C-c e c" . paredit-convolute-sexp))
   :hook (lisp-mode emacs-lisp-mode clojure-mode)
   :diminish)
 
