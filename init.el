@@ -163,7 +163,8 @@ Will execute only if Tree-Sitter is actually available."
 		(heex "https://github.com/phoenixframework/tree-sitter-heex")))
 	;; Install the grammers (if not already installed)
 	(mapc #'treesit-install-language-grammar
-	      (mapcar #'car treesit-language-source-alist)))
+	      (seq-remove (lambda (lang) (treesit-language-available-p lang))
+			  (mapcar #'car treesit-language-source-alist))))
     (message "Tree-Sitter not available. Skipping its initialization.")))
 
 (sch/setup-treesit-grammers)
