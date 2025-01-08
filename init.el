@@ -52,12 +52,6 @@
   ;; -a")
   (setenv "LANG" "en_US.UTF-8"))
 
-;; ----------------------------------
-;; Adding local-configs to load-path.
-(add-to-list 'load-path (file-name-as-directory
-			 (expand-file-name "local-configs"
-					   user-emacs-directory)))
-
 ;; ------------------------
 ;; Global built-in configs.
 
@@ -165,6 +159,35 @@ Will execute only if Tree-Sitter is actually available."
     (message "Tree-Sitter not available. Skipping its initialization.")))
 
 (sch/setup-treesit-grammers)
+
+;; ----
+;; Site-specific config
+
+(defvar sch/site-config-dir (file-name-as-directory
+			     (expand-file-name "site-config"
+					       user-emacs-directory))
+  "Directory where site-specific configurations reside.")
+
+(defun sch/maybe-load-site-conf (filename)
+  "Load site-specific config contained in FILENAME.
+
+FILENAME is searched in the `site-config-dir' dir."
+  (let  ((abs-filename (concat sch/site-config-dir
+			       filename)))
+    (when (file-exists-p abs-filename)
+      (load abs-filename))))
+
+;;; Load generic site-specific configurations
+;; Place to include ad-hoc changes or experimentation to the
+;; initialization logic specific for a given site. File is not version
+;; controlled and is missing by default.
+;;; NOTE: If some requred library is expected to have site-specific
+;; configuration every time, it's better to split it under its own
+;; file under `site-config'.
+;;; NOTE: Be careful when mutating varialbes (functions like
+;; `add-to-list' and firends) because they might not be loaded
+;; yet. Use `eval-after-load' when working with such variables.
+(sch/maybe-load-site-conf "site-generic.el")
 
 ;; ----
 ;; Straight
@@ -751,34 +774,52 @@ CURRENT-PYTHON - string, currently selected python version."
   :defer t
   :mode ("\\.epub\\'" . nov-mode))
 
+;; -----------
+;; DEPRECATED!
+
+;; Left here only to illustrate the idea of `local-config',
+;; `local-sources', `local-tempaltes'. I've replaced the
+;; `local-config' and `local-templates' with new `site-config' and
+;; `site-templates'. There is no alternative for `local-sources' for
+;; now because I don't have the case, but maybe `straight' will be a
+;; solution for that case.
+
 ;; +++
 ;; Installed from source
 ;; +++- Orgmine
 ;; + ++-- Orgmine Dependencies
-(use-package elmine
-  :ensure t
-  :defer t)
+;; (use-package elmine
+;;   :ensure t
+;;   :defer t)
 
+;; ----------------------------------
+;; Adding local-configs to load-path.
+;; (add-to-list 'load-path (file-name-as-directory
+;; 			 (expand-file-name "local-configs"
+;; 					   user-emacs-directory)))
 
-(let ((local-sources-dir (file-name-as-directory
-			  (expand-file-name
-			   "local-sources"
-			   user-emacs-directory))))
-  ;; Orgmine
-  (add-to-list 'load-path (file-name-as-directory
-			   (expand-file-name
-			    "orgmine"
-			    local-sources-dir)))
-  (when (require 'orgmine nil t)
-    (add-hook 'org-mode-hook
-	      (lambda () (if (assoc "om_project" org-file-properties)
-			     (orgmine-mode))))
-    (require 'orgmine-config))
+;; (let ((local-sources-dir (file-name-as-directory
+;; 			  (expand-file-name
+;; 			   "local-sources"
+;; 			   user-emacs-directory))))
+;;   ;; Orgmine
+;;   (add-to-list 'load-path (file-name-as-directory
+;; 			   (expand-file-name
+;; 			    "orgmine"
+;; 			    local-sources-dir)))
+;;   (when (require 'orgmine nil t)
+;;     (add-hook 'org-mode-hook
+;; 	      (lambda () (if (assoc "om_project" org-file-properties)
+;; 			     (orgmine-mode))))
+;;     (require 'orgmine-config))
 
-  ;; Confluence enhanced exporter
-  (add-to-list 'load-path (file-name-as-directory
-			   (expand-file-name
-			    "ox-confluence-en"
-			    local-sources-dir))))
+;;   ;; Confluence enhanced exporter
+;;   (add-to-list 'load-path (file-name-as-directory
+;; 			   (expand-file-name
+;; 			    "ox-confluence-en"
+;; 			    local-sources-dir))))
+
+;; ---------------------
+;; ^^^ / DEPRECATED! ^^^
 
 ;;; init.el ends here

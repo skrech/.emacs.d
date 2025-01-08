@@ -17,13 +17,19 @@ customize.el
 /auto-save-list/
 /.backup/
 
+# Tree-sitter
+/tree-sitter
+
 # Cache files and settings for packages
+/eln-cache
+/transient
 /.python-environments
 /anaconda-mode
 /ac-comphist.dat
 /tutorial/
 /.mc-lists.el
 /smex-items
+/amx-items
 /bookmarks
 /history
 /ido.last*
