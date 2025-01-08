@@ -52,9 +52,6 @@
   ;; -a")
   (setenv "LANG" "en_US.UTF-8"))
 
-(when (eq system-type 'gnu/linux)
-  (setq exec-path (cons (expand-file-name "bin" "~") exec-path)))
-
 ;; ----------------------------------
 ;; Adding local-configs to load-path.
 (add-to-list 'load-path (file-name-as-directory
