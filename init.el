@@ -487,10 +487,22 @@ RET is the original return from the function."
 (use-package eglot
   :ensure t
   :defer t
+  :config
+  (when (< emacs-major-version 30)
+    ;; `eglot' in Emacs before version 30.* doesn't have support for
+    ;; Lexical (Elixir) LSP. Add support for Lexical in that case.
+    (add-to-list 'eglot-server-programs
+		 `((elixir-ts-mode heex-ts-mode) .
+                   ,(if (and (fboundp 'w32-shell-dos-semantics)
+                             (w32-shell-dos-semantics))
+			'("language_server.bat")
+                      (eglot-alternatives
+                       '("language_server.sh" "start_lexical.sh"))))))
   :bind (:map eglot-mode-map
-	 ("C-c e f" . eglot-format))
+	      ("C-c e f" . eglot-format))
   :hook
   ((python-mode . eglot-ensure)
+   (elixir-ts-mode . eglot-ensure)
    (go-mode . eglot-ensure)
    (typescript-mode . eglot-ensure)))
 
