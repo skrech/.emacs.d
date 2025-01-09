@@ -107,6 +107,7 @@
 ;; Prevent accidental exiting
 (setq confirm-kill-emacs 'y-or-n-p)
 
+;;; TODO -- configure sending mail properly by using SMTP submission.
 ;; Email config
 (setq send-mail-function    'smtpmail-send-it
       user-mail-address     "skrechy@gmail.com"
