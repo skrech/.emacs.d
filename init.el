@@ -104,9 +104,6 @@
 ;; TODO: make it more general
 (setq find-grep-options "-Iq --exclude=\"*\\.svn*\"")
 
-;; Don't ask newbie questions
-(defalias 'yes-or-no-p 'y-or-n-p)
-
 ;; Prevent accidental exiting
 (setq confirm-kill-emacs 'y-or-n-p)
 
