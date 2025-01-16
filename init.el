@@ -717,10 +717,10 @@ CURRENT-PYTHON - string, currently selected python version."
 ;; Misc
 
 ;; Org community contributions
-(use-package org-contrib
-  :straight t
-  :ensure t
-  :defer t)
+;; (use-package org-contrib
+;;   :straight t
+;;   :ensure t
+;;   :defer t)
 
 ;; Rainbow-Delimiters -- colors parentheses in programming modes.
 ;; (use-package rainbow-delimiters
