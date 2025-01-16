@@ -27,7 +27,9 @@
   (add-to-list 'exec-path "C:\\msys64\\usr\\bin")
 
   ;; Fix 'find' listing on Windows
-  (setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))
+  (with-eval-after-load 'find-dired
+      (if (boundp 'find-ls-option)
+	  (setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))))
 
  ;; --- MacOS
  ((eval-when-compile (eq system-type 'darwin))
@@ -122,7 +124,7 @@
 ;; Abbreviate long path-like Git branch names
 (defun shorten-git-mode-line (return-string)
   "Abbreviates path-like Git branches and preserves the prefix.
-RETURN-STRING - the string returned by vc-git-mode-line-string."
+RETURN-STRING - the string returned by `vc-git-mode-line-string'."
   (let ((prefix (substring return-string 0 4)))
     (concat prefix (replace-regexp-in-string "\\([^/]\\{2\\}\\)[^/]*/"
 					     "\\1/"
@@ -840,4 +842,4 @@ CURRENT-PYTHON - string, currently selected python version."
 ;; ---------------------
 ;; ^^^ / DEPRECATED! ^^^
 
-;;; init.el ends here
+;;; init.el ends here.
