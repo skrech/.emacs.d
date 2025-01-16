@@ -515,7 +515,7 @@ RET is the original return from the function."
 	      ("C-c e s" . paredit-splice-sexp)
 	      ("C-c e r" . paredit-raise-sexp)
 	      ("C-c e c" . paredit-convolute-sexp))
-  :hook (lisp-mode emacs-lisp-mode clojure-mode)
+  :hook ((lisp-mode emacs-lisp-mode clojure-mode) . paredit-mode)
   :diminish)
 
 ;; +++-
@@ -535,17 +535,18 @@ RET is the original return from the function."
 
 ;; +++-
 ;; Elixir
-(use-package elixir-ts-mode
-  :ensure t
-  :defer t
-  :if (sch/treesit-available-p 'elixir)
-  :init
-  ;; Emacs 30 has builtin support for `elixir-mode' and
-  ;; `elixir-ts-mode', so we only remap. Older versions of Emacs will
-  ;; automatically update 'auto-mode-alist' from the autoloads in the
-  ;; (backported/this) MELPA package.
-  (when (>= emacs-major-version 30)
-    (push '(elixir-mode . elixir-ts-mode) major-mode-remap-alist)))
+(when (>= emacs-major-version 29)
+  (use-package elixir-ts-mode
+    :ensure t
+    :defer t
+    :if (sch/treesit-available-p 'elixir)
+    :init
+    ;; Emacs 30 has builtin support for `elixir-mode' and
+    ;; `elixir-ts-mode', so we only remap. Older versions of Emacs will
+    ;; automatically update 'auto-mode-alist' from the autoloads in the
+    ;; (backported/this) MELPA package.
+    (when (>= emacs-major-version 30)
+      (push '(elixir-mode . elixir-ts-mode) major-mode-remap-alist))))
 
 ;; +++-
 ;; Python
@@ -685,13 +686,14 @@ CURRENT-PYTHON - string, currently selected python version."
 
 ;; +++-
 ;; Kubernetes
-(use-package kele
-  :ensure t
-  :bind-keymap
-  ("C-c k" . kele-command-map)
-  :config
-  ;; Temporary force kubeconfig to the default one
-  (setq kele-kubeconfig-path "~/.kube/config"))
+(when (>= emacs-major-version 29)
+  (use-package kele
+    :ensure t
+    :bind-keymap
+    ("C-c k" . kele-command-map)
+    :config
+    ;; Temporary force kubeconfig to the default one
+    (setq kele-kubeconfig-path "~/.kube/config")))
 
 ;; +++-
 ;; Rego Policy Major Mode
