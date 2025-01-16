@@ -372,12 +372,12 @@ FILENAME is searched in the `site-config-dir' dir."
   :diminish yas-minor-mode)
 
 ;; Semantic - Source code lexical analysis from CEDET
-(use-package semantic
-  :init
-  (semantic-mode 1)
-  :config
-  ;; Remove python from semantic
-  (assoc-delete-all 'python-mode semantic-new-buffer-setup-functions))
+;; (use-package semantic
+;;   :init
+;;   (semantic-mode 1)
+;;   :config
+;;   ;; Remove python from semantic
+;;   (assoc-delete-all 'python-mode semantic-new-buffer-setup-functions))
 
 ;; Diminish - needed for proper work of use-package
 (use-package diminish
