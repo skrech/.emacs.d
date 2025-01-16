@@ -4,8 +4,9 @@
 # Emacs visited backup files
 *~
 
-# Emacs customize file
+# Emacs customization files that need not be under VC
 customize.el
+/site-config/site-generic.el
 
 # Installed packages
 /elpa/
