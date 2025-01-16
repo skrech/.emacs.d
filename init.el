@@ -625,7 +625,9 @@ CURRENT-PYTHON - string, currently selected python version."
 ;; +++-
 ;; SQL
 (use-package sql-indent
-  :ensure t)
+  :ensure t
+  :hook
+  (sql-mode . sqlind-minor-mode))
 
 ;; +++-
 ;; Shell script
