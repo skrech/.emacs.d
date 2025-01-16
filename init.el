@@ -134,7 +134,27 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 	    :filter-return
 	    'shorten-git-mode-line)
 
-;; ----
+;; -----------
+;; Auth-source
+
+;; Enable `password-store' -- that is, integrate with `pass' UNIX
+;; utility. We enabled it at the end of auth-sources, so that
+;; `.authinfo' files take precendence (especially the un-encrypted
+;; one) for easier ad-hoc experiments.
+;; (require 'auth-source-pass)
+(with-eval-after-load 'auth-source
+  ;; Require the builtin 'pass'-integration library so registration
+  ;; hooks can run.
+  (require 'auth-source-pass)
+
+  ;; Customize `auth-sources'. Put `.authinfo' files (unencrypted and
+  ;; encrypted) before `password-store' for easier ad-hoc
+  ;; customizations when needed. Otherwise, all my passwords are saved
+  ;; in 'pass'
+  (if (boundp 'auth-sources)
+      (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" password-store))))
+
+;; -----------
 ;; Tree-sitter
 
 (require 'treesit nil 'noerror)
