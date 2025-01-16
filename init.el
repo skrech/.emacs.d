@@ -4,7 +4,7 @@
 ;; Emacs configuration of Kristiyan Kanchev
 
 ;;; Code:
-
+;;
 ;; ------------------------
 ;; Emacs Customization file
 
@@ -217,16 +217,44 @@ FILENAME is searched in the `site-config-dir' dir."
 ;; ----
 ;; ELPA
 
+(require 'package)
+
+;; Call `eval-and-compile' to make the byte-compiler aware of the
+;; load-path modifications and autoloadeds in the installed packages.
+
+;; -- EXPLANATION: `package.el' creates autoloads file when installing
+;; every package. `package-initialize' enumerates the installed
+;; packages and then 'activates' them (meaning, modifying load-path
+;; and then loading their autoloads).  Byte-compiler should *eval* the
+;; initialization code in addition to compiling it (because compile
+;; only records the function call w/o knowing what would happen
+;; inside), so it knows the effects of activation. Usually, package
+;; initialization happens before user init is executed. However,
+;; byte-compiler (for linting) is always started with `emacs -q'
+;; switch, which doesn't initialize the packages as normal (see the
+;; docs of `package.el'). That's why we introduced early-init.el and
+;; manually cal `package-initialize', so the code for byte-compiler
+;; and interpreter are the same.
+
+;; -- WARNING: I came up with this solution *myself*. Check from time to
+;; time what would happen if eval-and-compile is removed --
+;; `package.el' or `use-package' might have prepared a built-in
+;; solution.
+(eval-and-compile
+  (package-initialize))
+
 ;; Set repos
 (setq package-archives
       ;; Package archives
       '(("GNU ELPA" . "http://elpa.gnu.org/packages/")
         ("MELPA"    . "https://melpa.org/packages/")))
 
-;; Bootstrap use-package
+;; Install `use-package' if using older version of Emacs.
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)		; refresh packages cache
   (package-install 'use-package))
+
+(require 'use-package)
 
 ;; ------------------------------
 ;; Packages init with use-package
