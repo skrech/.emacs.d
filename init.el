@@ -15,20 +15,23 @@
 ;; ------------
 ;; OS-dependent
 
-;; Windows
-(when (or (eq system-type 'windows-nt) (eq system-type 'msdos))
+(cond
+ ;; --- Windows
+ ((memq system-type '(windows-nt msdos))
+
   ;; Append MSYS2 to PATH on Windows
   (setenv "PATH" (concat "C:\\msys64\\mingw64\\bin;" (getenv "PATH")))
-  (setq exec-path (append '("C:\\msys64\\mingw64\\bin") exec-path))
+  (add-to-list 'exec-path "C:\\msys64\\mingw64\\bin")
 
   (setenv "PATH" (concat "C:\\msys64\\usr\\bin;" (getenv "PATH")))
-  (setq exec-path (append '("C:\\msys64\\usr\\bin") exec-path))
+  (add-to-list 'exec-path "C:\\msys64\\usr\\bin")
 
   ;; Fix 'find' listing on Windows
   (setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))
 
-;; MacOS
-(when (eq system-type 'darwin)
+ ;; --- MacOS
+ ((eval-when-compile (eq system-type 'darwin))
+
   ;; Swap Command and Control keys on OSX because if we use Mac with
   ;; their own keyboard and we remapped these keys in System
   ;; Preferences.
@@ -50,7 +53,7 @@
   ;; selecting English as main language and Bulgaria as
   ;; Region. However, this locale is not defined (checked with "locale
   ;; -a")
-  (setenv "LANG" "en_US.UTF-8"))
+  (setenv "LANG" "en_US.UTF-8")))
 
 ;; ------------------------
 ;; Global built-in configs.
@@ -60,7 +63,7 @@
 
 ;; Navigation numbers here and there.
 (setq column-number-mode t)	    ; show column number in modeline
-(if (>= emacs-major-version 26)	    ; display line numbers (> ver. 26)
+(if (eval-when-compile (>= emacs-major-version 26))	; display line numbers
     (global-display-line-numbers-mode)
   (global-linum-mode t))
 
@@ -101,8 +104,9 @@
 (sch/which-function-disable-mode-line)
 
 ;; find-grep-dired to not recurse in .svn folder
-;; TODO: make it more general
-(setq find-grep-options "-Iq --exclude=\"*\\.svn*\"")
+(with-eval-after-load 'find-dired
+  (if (boundp 'find-grep-options)
+      (setq find-grep-options "-Iq --exclude=\"*\\.svn*\"")))
 
 ;; Prevent accidental exiting
 (setq confirm-kill-emacs 'y-or-n-p)
