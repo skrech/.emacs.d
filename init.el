@@ -1,19 +1,19 @@
 ;;; init.el --- Emacs configuration of Kristiyan Kanchev
 
 ;;; Commentary:
-;; Emacs configuration of Kristiyan Kanchev
+;;; Emacs configuration of Kristiyan Kanchev
 
 ;;; Code:
-;;
-;; ------------------------
-;; Emacs Customization file
+;;;
+;;; ------------------------
+;;; Emacs Customization file
 
 (setq custom-file (expand-file-name "customize.el" user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file))
 
-;; ------------
-;; OS-dependent
+;;; ------------
+;;; OS-dependent
 
 (cond
  ;; --- Windows
@@ -28,8 +28,8 @@
 
   ;; Fix 'find' listing on Windows
   (with-eval-after-load 'find-dired
-      (if (boundp 'find-ls-option)
-	  (setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))))
+    (if (boundp 'find-ls-option)
+	(setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))))
 
  ;; --- MacOS
  ((eval-when-compile (eq system-type 'darwin))
@@ -57,32 +57,32 @@
   ;; -a")
   (setenv "LANG" "en_US.UTF-8")))
 
-;; ------------------------
-;; Global built-in configs.
+;;; ------------------------
+;;; Global built-in configs.
 
-;; Disable toobar.
+;;; Disable toobar.
 (tool-bar-mode -1)
 
-;; Navigation numbers here and there.
+;;; Navigation numbers here and there.
 (setq column-number-mode t)	    ; show column number in modeline
 (if (eval-when-compile (>= emacs-major-version 26))	; display line numbers
     (global-display-line-numbers-mode)
   (global-linum-mode t))
 
-;; Fix scroll.
+;;; Fix scroll.
 (setq scroll-conservatively 10000)    ; allow to scrol line-by-line
 
-;; Parentheses stuff
+;;; Parentheses stuff
 (electric-pair-mode)		      ; auto-close parentheses
 (show-paren-mode)		      ; show matching parentheses
 
-;; Delete trailing space before save.
+;;; Delete trailing space before save.
 (add-hook 'before-save-hook
 	  'delete-trailing-whitespace)	       ; delete whitespaces
 (put 'dired-find-alternate-file 'disabled nil) ; reuse dired buffers
 
-;; Shows current function name -- in the header for modes are
-;; specified in `sch/which-function-in-header-modes'
+;;; Shows current function name -- in the header for modes are
+;;; specified in `sch/which-function-in-header-modes'
 (defvar sch/which-function-in-header-modes '(python-mode))
 (defvar-local sch/which-function-in-mode-line t)
 
@@ -105,23 +105,23 @@
 (which-function-mode t)
 (sch/which-function-disable-mode-line)
 
-;; find-grep-dired to not recurse in .svn folder
+;;; find-grep-dired to not recurse in .svn folder
 (with-eval-after-load 'find-dired
   (if (boundp 'find-grep-options)
       (setq find-grep-options "-Iq --exclude=\"*\\.svn*\"")))
 
-;; Prevent accidental exiting
+;;; Prevent accidental exiting
 (setq confirm-kill-emacs 'y-or-n-p)
 
-;;; TODO -- configure sending mail properly by using SMTP submission.
-;; Email config
+;;; Email config
+					;TODO; -- configure sending mail properly by using SMTP submission.
 (setq send-mail-function    'smtpmail-send-it
       user-mail-address     "skrechy@gmail.com"
       smtpmail-smtp-server  "smtp.gmail.com"
       smtpmail-stream-type  'ssl
       smtpmail-smtp-service 465)
 
-;; Abbreviate long path-like Git branch names
+;;; Abbreviate long path-like Git branch names
 (defun shorten-git-mode-line (return-string)
   "Abbreviates path-like Git branches and preserves the prefix.
 RETURN-STRING - the string returned by `vc-git-mode-line-string'."
@@ -134,14 +134,14 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 	    :filter-return
 	    'shorten-git-mode-line)
 
-;; -----------
-;; Auth-source
+;;; -----------
+;;; Auth-source
 
-;; Enable `password-store' -- that is, integrate with `pass' UNIX
-;; utility. We enabled it at the end of auth-sources, so that
-;; `.authinfo' files take precendence (especially the un-encrypted
-;; one) for easier ad-hoc experiments.
-;; (require 'auth-source-pass)
+;;; Enable `password-store' -- that is, integrate with `pass' UNIX
+;;; utility. We enabled it at the end of auth-sources, so that
+;;; `.authinfo' files take precendence (especially the un-encrypted
+;;; one) for easier ad-hoc experiments.
+;;; (require 'auth-source-pass)
 (with-eval-after-load 'auth-source
   ;; Require the builtin 'pass'-integration library so registration
   ;; hooks can run.
@@ -226,25 +226,25 @@ FILENAME is searched in the `site-config-dir' dir."
       (load abs-filename))))
 
 ;;; Load generic site-specific configurations
-;; Place to include ad-hoc changes or experimentation to the
-;; initialization logic specific for a given site. File is not version
-;; controlled and is missing by default.
-;;; NOTE: If some requred library is expected to have site-specific
-;; configuration every time, it's better to split it under its own
-;; file under `site-config'.
-;;; NOTE: Be careful when mutating varialbes (functions like
-;; `add-to-list' and firends) because they might not be loaded
-;; yet. Use `eval-after-load' when working with such variables.
+;;; Place to include ad-hoc changes or experimentation to the
+;;; initialization logic specific for a given site. File is not version
+;;; controlled and is missing by default.
+;;; _NOTE_: If some requred library is expected to have site-specific
+;;; configuration every time, it's better to split it under its own
+;;; file under `site-config'.
+;;; _NOTE_: Be careful when mutating varialbes (functions like
+;;; `add-to-list' and firends) because they might not be loaded
+;;; yet. Use `eval-after-load' when working with such variables.
 (sch/maybe-load-site-conf "site-generic.el")
 
-;; ----
-;; Straight
+;;; ----
+;;; Straight
 
-;; Disable straight.el customization hacks.
+;;; Disable straight.el customization hacks.
 (defvar straight-enable-package-integration)
 (setq straight-enable-package-integration nil)
 
-;; Bootstrap straight.el
+;;; Bootstrap straight.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -258,8 +258,8 @@ FILENAME is searched in the `site-config-dir' dir."
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-;; ----
-;; ELPA
+;;; ----
+;;; ELPA
 
 (require 'package)
 
@@ -287,30 +287,30 @@ FILENAME is searched in the `site-config-dir' dir."
 (eval-and-compile
   (package-initialize))
 
-;; Set repos
+;;; Set repos
 (setq package-archives
       ;; Package archives
       '(("GNU ELPA" . "http://elpa.gnu.org/packages/")
         ("MELPA"    . "https://melpa.org/packages/")))
 
-;; Install `use-package' if using older version of Emacs.
+;;; Install `use-package' if using older version of Emacs.
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)		; refresh packages cache
   (package-install 'use-package))
 
 (require 'use-package)
 
-;; ------------------------------
-;; Packages init with use-package
+;;; ------------------------------
+;;; Packages init with use-package
 
-;; +++
-;; Always-on
+;;; +++
+;;; Always-on
 
-;; Themes
-;; (use-package color-theme-sanityinc-tomorrow
-;;   :ensure t
-;;   :init
-;;   (load-theme 'sanityinc-tomorrow-eighties t))
+;;; Themes
+;;; (use-package color-theme-sanityinc-tomorrow
+;;;   :ensure t
+;;;   :init
+;;;   (load-theme 'sanityinc-tomorrow-eighties t))
 
 (use-package solarized-theme
   :ensure t
@@ -326,7 +326,7 @@ FILENAME is searched in the `site-config-dir' dir."
   ;; 	solarized-height-plus-4 1.0)
   (load-theme 'solarized-light t))
 
-;; Ivy -- Completion mechanism.
+;;; Ivy -- Completion mechanism.
 (use-package ivy
   :ensure t
   :init
@@ -343,7 +343,7 @@ FILENAME is searched in the `site-config-dir' dir."
 (use-package ivy-hydra
   :ensure t)
 
-;; Counsel -- Power replacement for Emacs' commands and some external tools.
+;;; Counsel -- Power replacement for Emacs' commands and some external tools.
 (use-package counsel
   :ensure t
   :init
@@ -368,14 +368,14 @@ FILENAME is searched in the `site-config-dir' dir."
 						))
   :diminish counsel-mode)
 
-;; Swiper -- Isearch on steroids using Ivy.
+;;; Swiper -- Isearch on steroids using Ivy.
 (use-package swiper
   :ensure t
   :bind
   (("C-s" . swiper-isearch)
    ("M-s ." . swiper-isearch-thing-at-point)))
 
-;; Projectile
+;;; Projectile
 (use-package projectile
   :ensure t
   :init
@@ -392,7 +392,7 @@ FILENAME is searched in the `site-config-dir' dir."
   :bind-keymap
   ("C-c p" . projectile-command-map))
 
-;; Avy -- Jump to visible text
+;;; Avy -- Jump to visible text
 (use-package avy
   :ensure t
   :config
@@ -401,7 +401,7 @@ FILENAME is searched in the `site-config-dir' dir."
   (global-set-key (kbd "M-g f") 'avy-goto-line)
   (global-set-key (kbd "M-g w") 'avy-goto-word-1))
 
-;; Counsel-projectile -- Integrates projectile with Ivy
+;;; Counsel-projectile -- Integrates projectile with Ivy
 (use-package counsel-projectile
   :ensure t
   :if (and (featurep 'counsel) (featurep 'projectile))
@@ -409,7 +409,7 @@ FILENAME is searched in the `site-config-dir' dir."
   (counsel-projectile-mode)
   :diminish)
 
-;; Company-mode
+;;; Company-mode
 (use-package company
   :ensure t
   :init
@@ -420,21 +420,21 @@ FILENAME is searched in the `site-config-dir' dir."
   (("C-c a" . company-complete-tooltip-row))
   :diminish company-mode)
 
-;; Which key
+;;; Which key
 (use-package which-key
   :ensure t
   :init
   (which-key-mode)
   :diminish which-key-mode)
 
-;; Magit -- A Git Porcelain inside Emacs.
+;;; Magit -- A Git Porcelain inside Emacs.
 (use-package magit
   :ensure t
   :bind (("C-c g g" . magit-status)
 	 ("C-c g d" . magit-dispatch)
 	 ("C-c g f" . magit-file-dispatch)))
 
-;; Yasnippet
+;;; Yasnippet
 (use-package yasnippet-snippets
   :ensure t)
 
@@ -445,32 +445,24 @@ FILENAME is searched in the `site-config-dir' dir."
   (yas-global-mode)
   :diminish yas-minor-mode)
 
-;; Semantic - Source code lexical analysis from CEDET
-;; (use-package semantic
-;;   :init
-;;   (semantic-mode 1)
-;;   :config
-;;   ;; Remove python from semantic
-;;   (assoc-delete-all 'python-mode semantic-new-buffer-setup-functions))
-
-;; Diminish - needed for proper work of use-package
+;;; Diminish - needed for proper work of use-package
 (use-package diminish
   :ensure t)
 
-;; EditorConfig support
+;;; EditorConfig support
 (use-package editorconfig
   :ensure t
   :config
   (editorconfig-mode 1)
   :diminish)
 
-;; +++
-;; Deffered
+;;; +++
+;;; Deffered
 
-;; +++-
-;; Built-in
+;;; +++-
+;;; Built-in
 
-;; Flymake -- And shorten the mode-line string.
+;;; Flymake -- And shorten the mode-line string.
 (use-package flymake
   :defer t
   :init
@@ -488,25 +480,26 @@ RET is the original return from the function."
 (advice-add 'flymake--mode-line-format
 	    :filter-return 'sch/shorten-flymake-mode-line)
 
-;; Spell-checking
+;;; Spell-checking
 (use-package flyspell
   :defer t
   :hook
   (text-mode . flyspell-mode)
   :diminish)
 
-;; ElDoc -- just diminish the minor mode.
+;;; ElDoc -- just diminish the minor mode.
 (use-package eldoc
   :defer t
   :diminish eldoc-mode)
 
-;; Subword -- allows to move on sub-word in CamelCase
+;;; Subword -- allows to move on sub-word in CamelCase
+					;TODO: Move subword mode into mode-specific config!
 (use-package subword
   :defer t
   :hook
-  ((python-mode clojure-mode c-mode-common typescript-mode org-mode) . subword-mode))
+  ((python-mode clojure-mode c-mode-common typescript-ts-base-mode org-mode) . subword-mode))
 
-;; Org-mode -- Emacs' flawless organize package.
+;;; Org-mode -- Emacs' flawless organize package.
 (use-package org
   :defer t
   :bind (("C-c o l" . org-store-link)
@@ -522,7 +515,7 @@ RET is the original return from the function."
     (require 'ox-confluence))
   (setq org-directory "~/org"
 
-	;; TODO keywords colours
+					;TODO; keywords colours
 	org-todo-keyword-faces '(("TODO" . org-warning)
 				 ("PRG" . "yellow")
 				 ("WAIT" . "orange")
@@ -543,8 +536,8 @@ RET is the original return from the function."
 	org-agenda-files (concat org-directory "/agenda_files")
 	org-agenda-restore-windows-after-quit t
 	org-agenda-todo-list-sublevels nil
-	;;; In TODO View of agenda, make visible only "open" (with not
-	;;; active timestamp) TODOs
+;;; In TODO View of agenda, make visible only "open" (with not
+;;; active timestamp) TODOs
 	org-agenda-todo-ignore-with-date t
 
 	org-refile-targets '((org-agenda-files . (:regexp . "Tasks$"))
@@ -558,8 +551,9 @@ RET is the original return from the function."
 			       '((emacs-lisp . t)
 				 (plantuml . t))))
 
-;; +++-
-;; LSP Client -- common for many languages.
+;;; +++-
+;;; LSP Client -- common for many languages.
+					;TODO: Make `eglot-ensure' setup for every major-mode separately.
 (use-package eglot
   :ensure t
   :defer t
@@ -583,7 +577,7 @@ RET is the original return from the function."
     js-base-mode
     typescript-ts-base-mode) . eglot-ensure))
 
-;; +++- Lisp Modes
+;;; +++- Lisp Modes
 (use-package paredit
   :ensure t
   :defer t
@@ -597,23 +591,23 @@ RET is the original return from the function."
   :hook ((lisp-mode emacs-lisp-mode clojure-mode) . paredit-mode)
   :diminish)
 
-;; +++-
-;; Clojure
+;;; +++-
+;;; Clojure
 (use-package cider
   :ensure t
   :defer t
   :init
   (add-hook 'clojure-mode-hook 'cider-mode))
 
-;; +++-
-;; Guile Scheme
+;;; +++-
+;;; Guile Scheme
 (use-package geiser-guile
   :ensure t
   :defer t
   :hook (scheme-mode . geiser-mode))
 
-;; +++-
-;; Elixir
+;;; +++-
+;;; Elixir
 (when (>= emacs-major-version 29)
   (use-package elixir-ts-mode
     :ensure t
@@ -627,10 +621,10 @@ RET is the original return from the function."
     (when (>= emacs-major-version 30)
       (push '(elixir-mode . elixir-ts-mode) major-mode-remap-alist))))
 
-;; +++-
-;; Python
+;;; +++-
+;;; Python
 
-;; Python mode
+;;; Python mode
 (defun sch/python-inline-comment-offset ()
   "Set inline offset for comments in Python buffers."
   (set (make-local-variable 'comment-inline-offset) 2))
@@ -644,7 +638,7 @@ RET is the original return from the function."
   (setq python-indent-def-block-scale 1))
 
 
-;; Pyenv
+;;; Pyenv
 (defface sch/pyenv-face '((t (:weight bold :foreground "#de935f")))
   "The face used to highlight the current python on the modeline."
   :group 'pyenv)
@@ -677,11 +671,11 @@ CURRENT-PYTHON - string, currently selected python version."
   (global-pyenv-mode 1)
   :bind (("C-c v" . pyenv-use))
   :hook (
-	 ;; TODO: Find a way to properly defer activating the global minor mode.
+					;TODO: Find a way to properly defer activating the global minor mode.
 	 ;; (python-mode . global-pyenv-mode)
 	 (pyenv-mode . sch/restart-eglot-on-pyenv-change)))
 
-;; Sphinx docstrings generation
+;;; Sphinx docstrings generation
 (use-package sphinx-doc
   :ensure t
   :defer t
@@ -689,7 +683,7 @@ CURRENT-PYTHON - string, currently selected python version."
   (add-hook 'python-mode-hook 'sphinx-doc-mode)
   :diminish sphinx-doc-mode)
 
-;; Syntax highlight and fill-paragraph for docstrings.
+;;; Syntax highlight and fill-paragraph for docstrings.
 (use-package python-docstring
   :ensure t
   :defer t
@@ -697,15 +691,15 @@ CURRENT-PYTHON - string, currently selected python version."
   (add-hook 'python-mode-hook 'python-docstring-mode)
   :diminish python-docstring-mode)
 
-;; +++-
-;; SQL
+;;; +++-
+;;; SQL
 (use-package sql-indent
   :ensure t
   :hook
   (sql-mode . sqlind-minor-mode))
 
-;; +++-
-;; Shell script
+;;; +++-
+;;; Shell script
 (use-package flymake-shellcheck
   :ensure t
   :defer t
@@ -713,20 +707,20 @@ CURRENT-PYTHON - string, currently selected python version."
   (add-hook 'sh-mode-hook 'flymake-shellcheck-load)
   (add-hook 'sh-mode-hook 'flymake-mode))
 
-;; +++-
-;; HTTP
+;;; +++-
+;;; HTTP
 
-;; Clever way of making requests.
+;;; Clever way of making requests.
 (use-package restclient
   :ensure t
   :mode ("\\.restclient\\'" . restclient-mode))
 
-;; Support for 'jq'-based hooks in 'restclient'
+;;; Support for 'jq'-based hooks in 'restclient'
 (use-package restclient-jq
   :ensure t
   :after restclient) ; note: `:after' uses eval-after-load; `:defer' should not be combined with `:after'!
 
-;; jq-mode -- mainly as dependency for restclient-jq
+;;; jq-mode -- mainly as dependency for restclient-jq
 (use-package jq-mode
   :ensure t
   :defer t)
@@ -736,22 +730,16 @@ CURRENT-PYTHON - string, currently selected python version."
   :ensure t
   :defer t)
 
-;; +++-
-;; Dockerfile
+;;; +++-
+;;; Dockerfile
 (use-package dockerfile-mode
   :ensure t
   :defer t
   :config
   (setq dockerfile-enable-auto-indent nil))
 
-;; +++-
-;; Kubernetes (old)
-;; (use-package kubernetes
-;;   :ensure t
-;;   :commands (kubernetes-overview))
-
-;; +++-
-;; Kubernetes
+;;; +++-
+;;; Kubernetes
 (when (>= emacs-major-version 29)
   (use-package kele
     :ensure t
@@ -761,28 +749,28 @@ CURRENT-PYTHON - string, currently selected python version."
     ;; Temporary force kubeconfig to the default one
     (setq kele-kubeconfig-path "~/.kube/config")))
 
-;; +++-
-;; Rego Policy Major Mode
+;;; +++-
+;;; Rego Policy Major Mode
 (use-package rego-mode
   :ensure t
   :defer t)
 
-;; +++-
-;; Groovy major mode.
+;;; +++-
+;;; Groovy major mode.
 (use-package groovy-mode
   :ensure t
   :defer t)
 
-;; +++-
-;; Misc
+;;; +++-
+;;; Misc
 
-;; Org community contributions
+;;; Org community contributions
 ;; (use-package org-contrib
 ;;   :straight t
 ;;   :ensure t
 ;;   :defer t)
 
-;; Rainbow-Delimiters -- colors parentheses in programming modes.
+;;; Rainbow-Delimiters -- colors parentheses in programming modes.
 ;; (use-package rainbow-delimiters
 ;;   :ensure t
 ;;   :defer t
@@ -790,24 +778,7 @@ CURRENT-PYTHON - string, currently selected python version."
 ;;   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
 ;;   :diminish rainbow-delimiters-mode)
 
-;; Helm-Gtags -- helm interface to gtags.
-;; (use-package helm-gtags
-;;   :ensure t
-;;   :if (featurep 'helm)
-;;   :defer t
-;;   :init
-;;   (progn
-;;     ;; Set the default key mapping
-;;     (setq helm-gtags-prefix-key "\C-cg"
-;; 	  helm-gtags-suggested-key-mapping t
-;; 	  helm-gtags-ignore-case t
-;; 	  helm-gtags-auto-update t)
-
-;;     ;; Enable for C-like modes
-;;     (add-hook 'c-mode-common-hook 'helm-gtags-mode))
-;;   :diminish helm-gtags-mode)
-
-;; Counsel-Gtags -- ivy interface to gtags.
+;;; Counsel-Gtags -- ivy interface to gtags.
 (use-package counsel-gtags
   :ensure t
   :if (featurep 'counsel)
@@ -822,12 +793,12 @@ CURRENT-PYTHON - string, currently selected python version."
   (add-hook 'c-mode-common-hook 'counsel-gtags-mode)
   :diminish)
 
-;; Amx - smex-like sorting in counsel-M-x.
+;;; Amx - smex-like sorting in counsel-M-x.
 (use-package amx
   :ensure
   :defer t)
 
-;; Markdown major mode.
+;;; Markdown major mode.
 (use-package markdown-mode
   :ensure t
   :mode (("README\\.md\\'" . gfm-mode)
@@ -835,7 +806,7 @@ CURRENT-PYTHON - string, currently selected python version."
          ("\\.markdown\\'" . markdown-mode))
   :defer t)
 
-;; PlantUML major mode.
+;;; PlantUML major mode.
 (use-package plantuml-mode
   :ensure t
   :mode "\\.plantuml\\'"
@@ -846,14 +817,14 @@ CURRENT-PYTHON - string, currently selected python version."
   ;; Integrate with org-mode editing
   (add-to-list 'org-src-lang-modes '("plantuml" . plantuml)))
 
-;; Epub reader
+;;; Epub reader
 (use-package nov
   :ensure t
   :defer t
   :mode ("\\.epub\\'" . nov-mode))
 
-;; -----------
-;; DEPRECATED!
+;;; -----------
+;;; DEPRECATED!
 
 ;; Left here only to illustrate the idea of `local-config',
 ;; `local-sources', `local-tempaltes'. I've replaced the
