@@ -154,38 +154,62 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
   (if (boundp 'auth-sources)
       (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" password-store))))
 
-;; -----------
-;; Tree-sitter
+;;; -----------
+;;; Tree-sitter
 
-(require 'treesit nil 'noerror)
+(defvar treesit-language-source-alist)
+(setq treesit-language-source-alist
+      '((elixir "https://github.com/elixir-lang/tree-sitter-elixir")
+	(heex "https://github.com/phoenixframework/tree-sitter-heex")
+	(javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
+	(typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+	(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+	(yaml "https://github.com/ikatyang/tree-sitter-yaml")))
 
-(defun sch/treesit-available-p (&optional lang)
-  "Check if current Emacs is built with tree-sitter support.
-LANG might be supplied (a symbol), which will additionally check if
-that language is available for tree-sitter."
+(defconst sch/treesit-remap-alist
+  '((js-mode . js-ts-mode)
+    ;; This is just for completeness. `js-jsx-mode' is rarely directly
+    ;; executed.
+    (js-jsx-mode . js-ts-mode)
+    ;; `javascript-mode' is an alias of `js-mode' but needs to be
+    ;; declared separately. Actually, this is what triggers remap 99%
+    ;; of the time.
+    (javascript-mode . js-ts-mode)))
+
+(defun sch/treesit-available-p (lang)
+  "Check if the supplied LANG (a symbol) is available for tree-sitter."
   (when (featurep 'treesit)
-    (if lang
-	(treesit-ready-p lang)
-      (treesit-available-p))))
+    (declare-function treesit-ready-p "treesit")
+    (treesit-ready-p lang)))
 
 (defun sch/setup-treesit-grammers ()
   "Configure Tree-Sitter grammer sources alist and install grammers.
-Will execute only if Tree-Sitter is actually available."
-  (if (sch/treesit-available-p)
-      (progn
-	(setq treesit-language-source-alist
-	      '((elixir "https://github.com/elixir-lang/tree-sitter-elixir")
-		(heex "https://github.com/phoenixframework/tree-sitter-heex")))
-	;; Install the grammers (if not already installed)
-	(mapc #'treesit-install-language-grammar
-	      (seq-remove (lambda (lang) (treesit-language-available-p lang))
-			  (mapcar #'car treesit-language-source-alist))))
-    (message "Tree-Sitter not available. Skipping its initialization.")))
+Needs Tree-Sitter to actually be available."
+  ;; Install the grammers (if not already installed)
+  (mapc #'treesit-install-language-grammar
+	(seq-remove (lambda (lang) (treesit-language-available-p lang))
+		    (mapcar #'car treesit-language-source-alist))))
 
-(sch/setup-treesit-grammers)
+					;TODO: Move re-mapping of major-modes into their indivudual setups.
+(defun sch/setup-treesit-remaps ()
+  "Make Emacs use the newer treesitter-based modes."
+  (mapc (lambda (remap-pair) (push remap-pair major-mode-remap-alist))
+	sch/treesit-remap-alist)
 
-;; ----
-;; Site-specific config
+  ;; Some newer modes don't have non-ts variants.
+  (push '("\\.ts\\'" . typescript-ts-mode) auto-mode-alist)
+  (push '("\\.tsx\\'" . tsx-ts-mode) auto-mode-alist))
+
+;;; Check if current Emacs is built with tree-sitter support and set it up.
+(if (eval-when-compile (and (fboundp 'treesit-available-p) (treesit-available-p)))
+    (progn
+      (require 'treesit)
+      (sch/setup-treesit-grammers)
+      (sch/setup-treesit-remaps))
+  (message "Tree-Sitter not available. Skipping its initialization."))
+
+;;; ----
+;;; Site-specific config
 
 (defvar sch/site-config-dir (file-name-as-directory
 			     (expand-file-name "site-config"
@@ -553,10 +577,11 @@ RET is the original return from the function."
   :bind (:map eglot-mode-map
 	      ("C-c e f" . eglot-format))
   :hook
-  ((python-mode . eglot-ensure)
-   (elixir-ts-mode . eglot-ensure)
-   (go-mode . eglot-ensure)
-   (typescript-mode . eglot-ensure)))
+  ((python-mode
+    elixir-ts-mode
+    go-mode
+    js-base-mode
+    typescript-ts-base-mode) . eglot-ensure))
 
 ;; +++- Lisp Modes
 (use-package paredit
@@ -687,21 +712,6 @@ CURRENT-PYTHON - string, currently selected python version."
   :init
   (add-hook 'sh-mode-hook 'flymake-shellcheck-load)
   (add-hook 'sh-mode-hook 'flymake-mode))
-
-;; +++-
-;; Typescript
-(use-package typescript-mode
-  :ensure t
-  :defer t
-  :init
-  (add-hook 'typescript-mode-hook
-	    (lambda () (setq indent-tabs-mode nil))))
-
-;; +++-
-;; Angular
-(use-package ng2-mode
-  :ensure t
-  :defer t)
 
 ;; +++-
 ;; HTTP
