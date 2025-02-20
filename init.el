@@ -2,21 +2,44 @@
 
 ;;; Commentary:
 ;;; Emacs configuration of Kristiyan Kanchev
+;;;
+;;; Structure of the file:
+;;; = Bootstrap
+;;; -- Customization file
+;;; -- OS-specific
+;;; -- Package manager
+;;; -- Tree-sitter
+;;; = Site-specific
+;;; = Global
+;;; -- Emacs basis config
+;;; -- Global minor modes
+;;; = Deferred
+;;; -- Tools and tool modes (minor modes)
+;;; -- Programming modes
+;;; -- Markup modes
+;;; -- Organization modes
+;;; -- Misc major modes
+
 
 ;;; Code:
-;;;
-;;; ------------------------
-;;; Emacs Customization file
+;;; ----------------------------------------------
+;;; ---------------------------------- Bootstrap ;
+;;; ----------------------------------------------
+
+
+;;; ------------------
+;;; Customization file
 
 (setq custom-file (expand-file-name "customize.el" user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file))
 
+
 ;;; ------------
-;;; OS-dependent
+;;; OS-specific
 
 (cond
- ;; --- Windows
+ ;; +++ Windows
  ((memq system-type '(windows-nt msdos))
 
   ;; Append MSYS2 to PATH on Windows
@@ -31,7 +54,7 @@
     (if (boundp 'find-ls-option)
 	(setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))))
 
- ;; --- MacOS
+ ;; +++ MacOS
  ((eval-when-compile (eq system-type 'darwin))
 
   ;; Swap Command and Control keys on OSX because if we use Mac with
@@ -57,8 +80,175 @@
   ;; -a")
   (setenv "LANG" "en_US.UTF-8")))
 
-;;; ------------------------
-;;; Global built-in configs.
+
+;;; ----------------
+;;; Package managers
+
+
+;;; +++ Package.el
+
+(require 'package)
+
+;; Call `eval-and-compile' to make the byte-compiler aware of the
+;; load-path modifications and autoloadeds in the installed packages.
+
+;; -- EXPLANATION: `package.el' creates autoloads file when installing
+;; every package. `package-initialize' enumerates the installed
+;; packages and then 'activates' them (meaning, modifying load-path
+;; and then loading their autoloads).  Byte-compiler should *eval* the
+;; initialization code in addition to compiling it (because compile
+;; only records the function call w/o knowing what would happen
+;; inside), so it knows the effects of activation. Usually, package
+;; initialization happens before user init is executed. However,
+;; byte-compiler (for linting) is always started with `emacs -q'
+;; switch, which doesn't initialize the packages as normal (see the
+;; docs of `package.el'). That's why we introduced early-init.el and
+;; manually cal `package-initialize', so the code for byte-compiler
+;; and interpreter are the same.
+
+;; -- WARNING: I came up with this solution *myself*. Check from time to
+;; time what would happen if eval-and-compile is removed --
+;; `package.el' or `use-package' might have prepared a built-in
+;; solution.
+(eval-and-compile
+  (package-initialize))
+
+;;; Set repos
+(setq package-archives
+      ;; Package archives
+      '(("GNU ELPA" . "http://elpa.gnu.org/packages/")
+        ("MELPA"    . "https://melpa.org/packages/")))
+
+
+;;; +++ Straight
+
+;;; Disable straight.el customization hacks.
+(defvar straight-enable-package-integration)
+(setq straight-enable-package-integration nil)
+
+;;; Bootstrap straight.el
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+
+;;; +++ Use-package
+
+;;; Install `use-package' if using older version of Emacs.
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)		; refresh packages cache
+  (package-install 'use-package))
+
+(require 'use-package)
+
+;;; Diminish - needed for proper work of use-package
+(use-package diminish
+  :ensure t)
+
+
+;;; -----------
+;;; Tree-sitter
+
+(defvar treesit-language-source-alist)
+(setq treesit-language-source-alist
+      '((elixir "https://github.com/elixir-lang/tree-sitter-elixir")
+	(heex "https://github.com/phoenixframework/tree-sitter-heex")
+	(javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
+	(typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+	(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+	(yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+
+(defconst sch/treesit-remap-alist
+  '((js-mode . js-ts-mode)
+    ;; This is just for completeness. `js-jsx-mode' is rarely directly
+    ;; executed.
+    (js-jsx-mode . js-ts-mode)
+    ;; `javascript-mode' is an alias of `js-mode' but needs to be
+    ;; declared separately. Actually, this is what triggers remap 99%
+    ;; of the time.
+    (javascript-mode . js-ts-mode)))
+
+(defun sch/treesit-available-p (lang)
+  "Check if the supplied LANG (a symbol) is available for tree-sitter."
+  (when (featurep 'treesit)
+    (declare-function treesit-ready-p "treesit")
+    (treesit-ready-p lang)))
+
+(defun sch/setup-treesit-grammers ()
+  "Configure Tree-Sitter grammer sources alist and install grammers.
+Needs Tree-Sitter to actually be available."
+  ;; Install the grammers (if not already installed)
+  (mapc #'treesit-install-language-grammar
+	(seq-remove (lambda (lang) (treesit-language-available-p lang))
+		    (mapcar #'car treesit-language-source-alist))))
+
+					;TODO: Move re-mapping of major-modes into their indivudual setups.
+(defun sch/setup-treesit-remaps ()
+  "Make Emacs use the newer treesitter-based modes."
+  (mapc (lambda (remap-pair) (push remap-pair major-mode-remap-alist))
+	sch/treesit-remap-alist)
+
+  ;; Some newer modes don't have non-ts variants.
+  (push '("\\.ts\\'" . typescript-ts-mode) auto-mode-alist)
+  (push '("\\.tsx\\'" . tsx-ts-mode) auto-mode-alist))
+
+;;; Check if current Emacs is built with tree-sitter support and set it up.
+(if (eval-when-compile (and (fboundp 'treesit-available-p) (treesit-available-p)))
+    (progn
+      (require 'treesit)
+      (sch/setup-treesit-grammers)
+      (sch/setup-treesit-remaps))
+  (message "Tree-Sitter not available. Skipping its initialization."))
+
+
+;;; ----------------------------------------------
+;;; ------------------------------ Site-specific ;
+;;; ----------------------------------------------
+
+(defvar sch/site-config-dir (file-name-as-directory
+			     (expand-file-name "site-config"
+					       user-emacs-directory))
+  "Directory where site-specific configurations reside.")
+
+(defun sch/maybe-load-site-conf (filename)
+  "Load site-specific config contained in FILENAME.
+
+FILENAME is searched in the `site-config-dir' dir."
+  (let  ((abs-filename (concat sch/site-config-dir
+			       filename)))
+    (when (file-exists-p abs-filename)
+      (load abs-filename))))
+
+;;; Load generic site-specific configurations
+;;; Place to include ad-hoc changes or experimentation to the
+;;; initialization logic specific for a given site. File is not version
+;;; controlled and is missing by default.
+;;; _NOTE_: If some requred library is expected to have site-specific
+;;; configuration every time, it's better to split it under its own
+;;; file under `site-config'.
+;;; _NOTE_: Be careful when mutating varialbes (functions like
+;;; `add-to-list' and firends) because they might not be loaded
+;;; yet. Use `eval-after-load' when working with such variables.
+(sch/maybe-load-site-conf "site-generic.el")
+
+
+;;; ----------------------------------------------
+;;; ------------------------------------- Global ;
+;;; ----------------------------------------------
+
+
+;;; ------------------
+;;; Emacs basis config
+					;todo: Use-package for the following configuration!
 
 ;;; Disable toobar.
 (tool-bar-mode -1)
@@ -134,7 +324,6 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 	    :filter-return
 	    'shorten-git-mode-line)
 
-;;; -----------
 ;;; Auth-source
 
 ;;; Enable `password-store' -- that is, integrate with `pass' UNIX
@@ -154,164 +343,11 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
   (if (boundp 'auth-sources)
       (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" password-store))))
 
-;;; -----------
-;;; Tree-sitter
 
-(defvar treesit-language-source-alist)
-(setq treesit-language-source-alist
-      '((elixir "https://github.com/elixir-lang/tree-sitter-elixir")
-	(heex "https://github.com/phoenixframework/tree-sitter-heex")
-	(javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-	(typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-	(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-	(yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+;;; ------------------
+;;; Global minor modes
 
-(defconst sch/treesit-remap-alist
-  '((js-mode . js-ts-mode)
-    ;; This is just for completeness. `js-jsx-mode' is rarely directly
-    ;; executed.
-    (js-jsx-mode . js-ts-mode)
-    ;; `javascript-mode' is an alias of `js-mode' but needs to be
-    ;; declared separately. Actually, this is what triggers remap 99%
-    ;; of the time.
-    (javascript-mode . js-ts-mode)))
-
-(defun sch/treesit-available-p (lang)
-  "Check if the supplied LANG (a symbol) is available for tree-sitter."
-  (when (featurep 'treesit)
-    (declare-function treesit-ready-p "treesit")
-    (treesit-ready-p lang)))
-
-(defun sch/setup-treesit-grammers ()
-  "Configure Tree-Sitter grammer sources alist and install grammers.
-Needs Tree-Sitter to actually be available."
-  ;; Install the grammers (if not already installed)
-  (mapc #'treesit-install-language-grammar
-	(seq-remove (lambda (lang) (treesit-language-available-p lang))
-		    (mapcar #'car treesit-language-source-alist))))
-
-					;TODO: Move re-mapping of major-modes into their indivudual setups.
-(defun sch/setup-treesit-remaps ()
-  "Make Emacs use the newer treesitter-based modes."
-  (mapc (lambda (remap-pair) (push remap-pair major-mode-remap-alist))
-	sch/treesit-remap-alist)
-
-  ;; Some newer modes don't have non-ts variants.
-  (push '("\\.ts\\'" . typescript-ts-mode) auto-mode-alist)
-  (push '("\\.tsx\\'" . tsx-ts-mode) auto-mode-alist))
-
-;;; Check if current Emacs is built with tree-sitter support and set it up.
-(if (eval-when-compile (and (fboundp 'treesit-available-p) (treesit-available-p)))
-    (progn
-      (require 'treesit)
-      (sch/setup-treesit-grammers)
-      (sch/setup-treesit-remaps))
-  (message "Tree-Sitter not available. Skipping its initialization."))
-
-;;; ----
-;;; Site-specific config
-
-(defvar sch/site-config-dir (file-name-as-directory
-			     (expand-file-name "site-config"
-					       user-emacs-directory))
-  "Directory where site-specific configurations reside.")
-
-(defun sch/maybe-load-site-conf (filename)
-  "Load site-specific config contained in FILENAME.
-
-FILENAME is searched in the `site-config-dir' dir."
-  (let  ((abs-filename (concat sch/site-config-dir
-			       filename)))
-    (when (file-exists-p abs-filename)
-      (load abs-filename))))
-
-;;; Load generic site-specific configurations
-;;; Place to include ad-hoc changes or experimentation to the
-;;; initialization logic specific for a given site. File is not version
-;;; controlled and is missing by default.
-;;; _NOTE_: If some requred library is expected to have site-specific
-;;; configuration every time, it's better to split it under its own
-;;; file under `site-config'.
-;;; _NOTE_: Be careful when mutating varialbes (functions like
-;;; `add-to-list' and firends) because they might not be loaded
-;;; yet. Use `eval-after-load' when working with such variables.
-(sch/maybe-load-site-conf "site-generic.el")
-
-;;; ----
-;;; Straight
-
-;;; Disable straight.el customization hacks.
-(defvar straight-enable-package-integration)
-(setq straight-enable-package-integration nil)
-
-;;; Bootstrap straight.el
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-
-;;; ----
-;;; ELPA
-
-(require 'package)
-
-;; Call `eval-and-compile' to make the byte-compiler aware of the
-;; load-path modifications and autoloadeds in the installed packages.
-
-;; -- EXPLANATION: `package.el' creates autoloads file when installing
-;; every package. `package-initialize' enumerates the installed
-;; packages and then 'activates' them (meaning, modifying load-path
-;; and then loading their autoloads).  Byte-compiler should *eval* the
-;; initialization code in addition to compiling it (because compile
-;; only records the function call w/o knowing what would happen
-;; inside), so it knows the effects of activation. Usually, package
-;; initialization happens before user init is executed. However,
-;; byte-compiler (for linting) is always started with `emacs -q'
-;; switch, which doesn't initialize the packages as normal (see the
-;; docs of `package.el'). That's why we introduced early-init.el and
-;; manually cal `package-initialize', so the code for byte-compiler
-;; and interpreter are the same.
-
-;; -- WARNING: I came up with this solution *myself*. Check from time to
-;; time what would happen if eval-and-compile is removed --
-;; `package.el' or `use-package' might have prepared a built-in
-;; solution.
-(eval-and-compile
-  (package-initialize))
-
-;;; Set repos
-(setq package-archives
-      ;; Package archives
-      '(("GNU ELPA" . "http://elpa.gnu.org/packages/")
-        ("MELPA"    . "https://melpa.org/packages/")))
-
-;;; Install `use-package' if using older version of Emacs.
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)		; refresh packages cache
-  (package-install 'use-package))
-
-(require 'use-package)
-
-;;; ------------------------------
-;;; Packages init with use-package
-
-;;; +++
-;;; Always-on
-
-;;; Themes
-;;; (use-package color-theme-sanityinc-tomorrow
-;;;   :ensure t
-;;;   :init
-;;;   (load-theme 'sanityinc-tomorrow-eighties t))
-
+;;; Theme
 (use-package solarized-theme
   :ensure t
   :init
@@ -326,26 +362,53 @@ FILENAME is searched in the `site-config-dir' dir."
   ;; 	solarized-height-plus-4 1.0)
   (load-theme 'solarized-light t))
 
+;;; Projectile
+(use-package projectile
+  :ensure t
+  :init
+  (projectile-mode)
+  :config
+  (setq projectile-indexing-method 'native
+	projectile-enable-caching t
+	projectile-mode-line-function '(lambda () (format " Prj[%s]" (projectile-project-name)))
+	;; projectile-svn-command "svn list -R --include-externals . | grep -v '/$' | tr '\\n' '\\0'"
+	projectile-globally-ignored-directories (append '("*__pycache__/")
+							projectile-globally-ignored-directories)
+	projectile-completion-system 'ivy
+	)
+  :bind-keymap
+  ("C-c p" . projectile-command-map))
+
 ;;; Ivy -- Completion mechanism.
 (use-package ivy
   :ensure t
-  :init
-  (ivy-mode)
+  :demand t
   :bind (:map ivy-minibuffer-map
 	      ([tab] . ivy-alt-done))
   :config
   (setq ivy-use-virtual-buffers t
 	ivy-count-format "(%d/%d) "
 	ivy-on-del-error-function 'ignore)
+  (ivy-mode t)
   :diminish ivy-mode)
 
 ;; Ivy Hydra
 (use-package ivy-hydra
-  :ensure t)
+  :ensure t
+  :requires ivy)
+
+;;; Swiper -- Isearch on steroids using Ivy.
+(use-package swiper
+  :ensure t
+  :requires ivy
+  :bind
+  (("C-s" . swiper-isearch)
+   ("M-s ." . swiper-isearch-thing-at-point)))
 
 ;;; Counsel -- Power replacement for Emacs' commands and some external tools.
 (use-package counsel
   :ensure t
+  :requires (ivy swiper)
   :init
   (counsel-mode)
   :bind
@@ -368,45 +431,28 @@ FILENAME is searched in the `site-config-dir' dir."
 						))
   :diminish counsel-mode)
 
-;;; Swiper -- Isearch on steroids using Ivy.
-(use-package swiper
-  :ensure t
-  :bind
-  (("C-s" . swiper-isearch)
-   ("M-s ." . swiper-isearch-thing-at-point)))
-
-;;; Projectile
-(use-package projectile
-  :ensure t
-  :init
-  (projectile-mode)
-  :config
-  (setq projectile-indexing-method 'native
-	projectile-enable-caching t
-	projectile-mode-line-function '(lambda () (format " Prj[%s]" (projectile-project-name)))
-	;; projectile-svn-command "svn list -R --include-externals . | grep -v '/$' | tr '\\n' '\\0'"
-	projectile-globally-ignored-directories (append '("*__pycache__/")
-							projectile-globally-ignored-directories)
-	projectile-completion-system 'ivy
-	)
-  :bind-keymap
-  ("C-c p" . projectile-command-map))
-
-;;; Avy -- Jump to visible text
-(use-package avy
-  :ensure t
-  :config
-  (global-set-key (kbd "C-:") 'avy-goto-char)
-  (global-set-key (kbd "C-'") 'avy-goto-char-2)
-  (global-set-key (kbd "M-g f") 'avy-goto-line)
-  (global-set-key (kbd "M-g w") 'avy-goto-word-1))
-
 ;;; Counsel-projectile -- Integrates projectile with Ivy
 (use-package counsel-projectile
   :ensure t
-  :if (and (featurep 'counsel) (featurep 'projectile))
-  :init
+  :requires (counsel projectile)
+  :demand t
+  :config
   (counsel-projectile-mode)
+  :diminish)
+
+;;; Counsel-Gtags -- ivy interface to gtags.
+(use-package counsel-gtags
+  :ensure t
+  :if (featurep 'counsel)
+  :defer t
+  :bind (:map counsel-gtags-mode-map
+	      ("M-." . counsel-gtags-find-definition)
+	      ("M-r" . counsel-gtags-find-reference)
+	      ("M-s" . counsel-gtags-find-symbol)
+	      ("M-," . counsel-gtags-go-backward))
+  :init
+  ;; Enabled for C-like modes
+  (add-hook 'c-mode-common-hook 'counsel-gtags-mode)
   :diminish)
 
 ;;; Company-mode
@@ -427,13 +473,6 @@ FILENAME is searched in the `site-config-dir' dir."
   (which-key-mode)
   :diminish which-key-mode)
 
-;;; Magit -- A Git Porcelain inside Emacs.
-(use-package magit
-  :ensure t
-  :bind (("C-c g g" . magit-status)
-	 ("C-c g d" . magit-dispatch)
-	 ("C-c g f" . magit-file-dispatch)))
-
 ;;; Yasnippet
 (use-package yasnippet-snippets
   :ensure t)
@@ -445,10 +484,6 @@ FILENAME is searched in the `site-config-dir' dir."
   (yas-global-mode)
   :diminish yas-minor-mode)
 
-;;; Diminish - needed for proper work of use-package
-(use-package diminish
-  :ensure t)
-
 ;;; EditorConfig support
 (use-package editorconfig
   :ensure t
@@ -456,11 +491,14 @@ FILENAME is searched in the `site-config-dir' dir."
   (editorconfig-mode 1)
   :diminish)
 
-;;; +++
-;;; Deffered
 
-;;; +++-
-;;; Built-in
+;;; ----------------------------------------------
+;;; ----------------------------------- Deferred ;
+;;; ----------------------------------------------
+
+
+;;; --------------------------------
+;;; Tools and tool modes (minor modes)
 
 ;;; Flymake -- And shorten the mode-line string.
 (use-package flymake
@@ -497,61 +535,20 @@ RET is the original return from the function."
 (use-package subword
   :defer t
   :hook
-  ((python-mode clojure-mode c-mode-common typescript-ts-base-mode org-mode) . subword-mode))
+  ((python-mode
+    clojure-mode
+    c-mode-common
+    js-base-mode
+    typescript-ts-base-mode
+    org-mode) . subword-mode))
 
-;;; Org-mode -- Emacs' flawless organize package.
-(use-package org
-  :defer t
-  :bind (("C-c o l" . org-store-link)
-	 ("C-c o a" . org-agenda)
-	 ("C-c o c" . org-capture)
-	 ("C-c o b" . org-switchb))
-  :config
-  ;; Use enhanced exporter if available
-  (if (require 'ox-confluence-en nil t)
-      ;; In current work place, Confluence doen't support PlantUML, so
-      ;; disable macro export.
-      (setq ox-confluence-en-use-plantuml-macro nil)
-    (require 'ox-confluence))
-  (setq org-directory "~/org"
+;;; Magit -- A Git Porcelain inside Emacs.
+(use-package magit
+  :ensure t
+  :bind (("C-c g g" . magit-status)
+	 ("C-c g d" . magit-dispatch)
+	 ("C-c g f" . magit-file-dispatch)))
 
-					;TODO; keywords colours
-	org-todo-keyword-faces '(("TODO" . org-warning)
-				 ("PRG" . "yellow")
-				 ("WAIT" . "orange")
-				 ("DONE" . org-done))
-
-	;; File to keep the captured items
-	org-default-notes-file (concat org-directory "/refile.org")
-
-	;; Custom capture templates.
-	;; NOTE: This is variable from package org-capture...
-	org-capture-templates '(("t" "Task" entry (file "")
-				 "* TODO %?\n  Logged on: %u")
-
-				("n" "Note" entry (file "notes.org")
-				 "* %?\n  Logged on: %u"))
-
-	;; Agenda config
-	org-agenda-files (concat org-directory "/agenda_files")
-	org-agenda-restore-windows-after-quit t
-	org-agenda-todo-list-sublevels nil
-;;; In TODO View of agenda, make visible only "open" (with not
-;;; active timestamp) TODOs
-	org-agenda-todo-ignore-with-date t
-
-	org-refile-targets '((org-agenda-files . (:regexp . "Tasks$"))
-			     (org-agenda-files . (:level . 1)))
-	org-refile-use-outline-path t
-	org-outline-path-complete-in-steps nil
-	org-plantuml-exec-mode 'plantuml)
-
-  ;; Load babel evaluation languages support.
-  (org-babel-do-load-languages 'org-babel-load-languages
-			       '((emacs-lisp . t)
-				 (plantuml . t))))
-
-;;; +++-
 ;;; LSP Client -- common for many languages.
 					;TODO: Make `eglot-ensure' setup for every major-mode separately.
 (use-package eglot
@@ -577,7 +574,10 @@ RET is the original return from the function."
     js-base-mode
     typescript-ts-base-mode) . eglot-ensure))
 
-;;; +++- Lisp Modes
+
+;;; +++ Lisp-common
+
+;;; Paredit
 (use-package paredit
   :ensure t
   :defer t
@@ -591,23 +591,63 @@ RET is the original return from the function."
   :hook ((lisp-mode emacs-lisp-mode clojure-mode) . paredit-mode)
   :diminish)
 
-;;; +++-
-;;; Clojure
+;;; Amx - smex-like sorting.
+;;; in `counsel-M-x'.
+(use-package amx
+  :ensure
+  :defer t)
+
+;;; Avy -- Jump to visible text
+;;; Also used by `counsel'
+(use-package avy
+  :ensure t
+  :defer t
+  :bind (("C-:" . avy-goto-char)
+	 ("C-'" . avy-goto-char-2)
+	 ("M-g f" . avy-goto-line)
+	 ("M-g w" . avy-goto-word-1)))
+
+;;; +++ SQL indentation
+(use-package sql-indent
+  :ensure t
+  :hook
+  (sql-mode . sqlind-minor-mode))
+
+;;; Rainbow-Delimiters -- colors parentheses in programming modes.
+;; (use-package rainbow-delimiters
+;;   :ensure t
+;;   :defer t
+;;   :init
+;;   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+;;   :diminish rainbow-delimiters-mode)
+
+
+;;; ---
+;;; Programming modes
+
+
+;;; +++ Clojure
+
+;;; Full development environment
 (use-package cider
   :ensure t
   :defer t
   :init
   (add-hook 'clojure-mode-hook 'cider-mode))
 
-;;; +++-
-;;; Guile Scheme
+
+;;; +++ Guile Scheme
+
+;;; Full development environment
 (use-package geiser-guile
   :ensure t
   :defer t
   :hook (scheme-mode . geiser-mode))
 
-;;; +++-
-;;; Elixir
+
+;;; +++ Elixir
+
+;;; Major mode for Elixir development with Tree-sitter suppoort
 (when (>= emacs-major-version 29)
   (use-package elixir-ts-mode
     :ensure t
@@ -621,10 +661,9 @@ RET is the original return from the function."
     (when (>= emacs-major-version 30)
       (push '(elixir-mode . elixir-ts-mode) major-mode-remap-alist))))
 
-;;; +++-
-;;; Python
 
-;;; Python mode
+;;; +++ Python
+
 (defun sch/python-inline-comment-offset ()
   "Set inline offset for comments in Python buffers."
   (set (make-local-variable 'comment-inline-offset) 2))
@@ -691,12 +730,6 @@ CURRENT-PYTHON - string, currently selected python version."
   (add-hook 'python-mode-hook 'python-docstring-mode)
   :diminish python-docstring-mode)
 
-;;; +++-
-;;; SQL
-(use-package sql-indent
-  :ensure t
-  :hook
-  (sql-mode . sqlind-minor-mode))
 
 ;;; +++-
 ;;; Shell script
@@ -750,53 +783,20 @@ CURRENT-PYTHON - string, currently selected python version."
     (setq kele-kubeconfig-path "~/.kube/config")))
 
 ;;; +++-
-;;; Rego Policy Major Mode
+;;; Rego Policy
 (use-package rego-mode
   :ensure t
   :defer t)
 
 ;;; +++-
-;;; Groovy major mode.
+;;; Groovy
 (use-package groovy-mode
   :ensure t
   :defer t)
 
-;;; +++-
-;;; Misc
 
-;;; Org community contributions
-;; (use-package org-contrib
-;;   :straight t
-;;   :ensure t
-;;   :defer t)
-
-;;; Rainbow-Delimiters -- colors parentheses in programming modes.
-;; (use-package rainbow-delimiters
-;;   :ensure t
-;;   :defer t
-;;   :init
-;;   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
-;;   :diminish rainbow-delimiters-mode)
-
-;;; Counsel-Gtags -- ivy interface to gtags.
-(use-package counsel-gtags
-  :ensure t
-  :if (featurep 'counsel)
-  :defer t
-  :bind (:map counsel-gtags-mode-map
-	      ("M-." . counsel-gtags-find-definition)
-	      ("M-r" . counsel-gtags-find-reference)
-	      ("M-s" . counsel-gtags-find-symbol)
-	      ("M-," . counsel-gtags-go-backward))
-  :init
-  ;; Enabled for C-like modes
-  (add-hook 'c-mode-common-hook 'counsel-gtags-mode)
-  :diminish)
-
-;;; Amx - smex-like sorting in counsel-M-x.
-(use-package amx
-  :ensure
-  :defer t)
+;;; ------------
+;;; Markup modes
 
 ;;; Markdown major mode.
 (use-package markdown-mode
@@ -805,6 +805,73 @@ CURRENT-PYTHON - string, currently selected python version."
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
   :defer t)
+
+
+;;; ------------------
+;;; Organization modes
+
+;;; Org-mode -- Emacs' flawless organize package.
+(use-package org
+  :defer t
+  :bind (("C-c o l" . org-store-link)
+	 ("C-c o a" . org-agenda)
+	 ("C-c o c" . org-capture)
+	 ("C-c o b" . org-switchb))
+  :config
+  ;; Use enhanced exporter if available
+  (if (require 'ox-confluence-en nil t)
+      ;; In current work place, Confluence doen't support PlantUML, so
+      ;; disable macro export.
+      (setq ox-confluence-en-use-plantuml-macro nil)
+    (require 'ox-confluence))
+  (setq org-directory "~/org"
+
+					;TODO; keywords colours
+	org-todo-keyword-faces '(("TODO" . org-warning)
+				 ("PRG" . "yellow")
+				 ("WAIT" . "orange")
+				 ("DONE" . org-done))
+
+	;; File to keep the captured items
+	org-default-notes-file (concat org-directory "/refile.org")
+
+	;; Custom capture templates.
+	;; NOTE: This is variable from package org-capture...
+	org-capture-templates '(("t" "Task" entry (file "")
+				 "* TODO %?\n  Logged on: %u")
+
+				("n" "Note" entry (file "notes.org")
+				 "* %?\n  Logged on: %u"))
+
+	;; Agenda config
+	org-agenda-files (concat org-directory "/agenda_files")
+	org-agenda-restore-windows-after-quit t
+	org-agenda-todo-list-sublevels nil
+	;; In TODO View of agenda, make visible only "open" (with not
+	;; active timestamp) TODOs
+	org-agenda-todo-ignore-with-date t
+
+	org-refile-targets '((org-agenda-files . (:regexp . "Tasks$"))
+			     (org-agenda-files . (:level . 1)))
+	org-refile-use-outline-path t
+	org-outline-path-complete-in-steps nil
+	org-plantuml-exec-mode 'plantuml)
+
+  ;; Load babel evaluation languages support.
+  (org-babel-do-load-languages 'org-babel-load-languages
+			       '((emacs-lisp . t)
+				 (plantuml . t))))
+
+
+;;; Org community contributions
+;; (use-package org-contrib
+;;   :straight t
+;;   :ensure t
+;;   :defer t)
+
+
+;;; ----------------
+;;; Misc major modes
 
 ;;; PlantUML major mode.
 (use-package plantuml-mode
@@ -823,8 +890,10 @@ CURRENT-PYTHON - string, currently selected python version."
   :defer t
   :mode ("\\.epub\\'" . nov-mode))
 
-;;; -----------
-;;; DEPRECATED!
+
+;;; ----------------------------------------------
+;;; ---------------------------- ( DEPRECATED! ) ;
+;;; ----------------------------------------------
 
 ;; Left here only to illustrate the idea of `local-config',
 ;; `local-sources', `local-tempaltes'. I've replaced the
@@ -867,8 +936,5 @@ CURRENT-PYTHON - string, currently selected python version."
 ;; 			   (expand-file-name
 ;; 			    "ox-confluence-en"
 ;; 			    local-sources-dir))))
-
-;; ---------------------
-;; ^^^ / DEPRECATED! ^^^
 
 ;;; init.el ends here.
