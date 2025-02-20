@@ -330,7 +330,6 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 	    'shorten-git-mode-line)
 
 ;;; Auth-source
-
 ;;; Enable `password-store' -- that is, integrate with `pass' UNIX
 ;;; utility. We enabled it at the end of auth-sources, so that
 ;;; `.authinfo' files take precendence (especially the un-encrypted
@@ -400,12 +399,13 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 ;; Ivy Hydra
 (use-package ivy-hydra
   :ensure t
-  :requires ivy)
+  :after ivy)
 
 ;;; Swiper -- Isearch on steroids using Ivy.
 (use-package swiper
   :ensure t
   :requires ivy
+  :demand t
   :bind
   (("C-s" . swiper-isearch)
    ("M-s ." . swiper-isearch-thing-at-point)))
@@ -414,8 +414,7 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 (use-package counsel
   :ensure t
   :requires (ivy swiper)
-  :init
-  (counsel-mode)
+  :demand t
   :bind
   (("C-x c r" . ivy-resume)
    ("C-x c g" . counsel-git)
@@ -434,6 +433,7 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 						"\\|"
 						"\\(?:^__pycache__$\\)" ;pycache
 						))
+  (counsel-mode)
   :diminish counsel-mode)
 
 ;;; Counsel-projectile -- Integrates projectile with Ivy
@@ -868,21 +868,19 @@ CURRENT-PYTHON - string, currently selected python version."
 	 ("C-c o b" . org-switchb))
   :config
   ;; Use enhanced exporter if available
-  (if (require 'ox-confluence-en nil t)
-      ;; In current work place, Confluence doen't support PlantUML, so
-      ;; disable macro export.
-      (setq ox-confluence-en-use-plantuml-macro nil)
-    (require 'ox-confluence))
-  (setq org-directory "~/org"
-
-					;TODO; keywords colours
+  ;; (if (require 'ox-confluence-en nil t)
+  ;;     ;; In current work place, Confluence doen't support PlantUML, so
+  ;;     ;; disable macro export.
+  ;;     (setq ox-confluence-en-use-plantuml-macro nil)
+  ;;   (require 'ox-confluence))
+  (setq org-directory (file-name-as-directory (expand-file-name "~/org"))
 	org-todo-keyword-faces '(("TODO" . org-warning)
 				 ("PRG" . "yellow")
 				 ("WAIT" . "orange")
 				 ("DONE" . org-done))
 
 	;; File to keep the captured items
-	org-default-notes-file (concat org-directory "/refile.org")
+	org-default-notes-file (concat org-directory "refile.org")
 
 	;; Custom capture templates.
 	;; NOTE: This is variable from package org-capture...
@@ -893,7 +891,7 @@ CURRENT-PYTHON - string, currently selected python version."
 				 "* %?\n  Logged on: %u"))
 
 	;; Agenda config
-	org-agenda-files (concat org-directory "/agenda_files")
+	org-agenda-files (concat org-directory "agenda_files")
 	org-agenda-restore-windows-after-quit t
 	org-agenda-todo-list-sublevels nil
 	;; In TODO View of agenda, make visible only "open" (with not
