@@ -14,9 +14,14 @@
 ;;; -- Emacs basis config
 ;;; -- Global minor modes
 ;;; = Deferred
-;;; -- Tools and tool modes (minor modes)
+;;; -- Tool modes (minor modes)
+;;; -- Tools
 ;;; -- Programming modes
+;;; -- Object Notation / Serialization
+;;; -- Query modes
 ;;; -- Markup modes
+;;; -- Styling modes
+;;; -- Purpose-specific
 ;;; -- Organization modes
 ;;; -- Misc major modes
 
@@ -498,7 +503,10 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 
 
 ;;; --------------------------------
-;;; Tools and tool modes (minor modes)
+;;; Tool modes (minor modes)
+
+
+;;; +++ On-the-fly analisys
 
 ;;; Flymake -- And shorten the mode-line string.
 (use-package flymake
@@ -530,28 +538,12 @@ RET is the original return from the function."
   :defer t
   :diminish eldoc-mode)
 
-;;; Subword -- allows to move on sub-word in CamelCase
-					;TODO: Move subword mode into mode-specific config!
-(use-package subword
-  :defer t
-  :hook
-  ((python-mode
-    clojure-mode
-    c-mode-common
-    js-base-mode
-    typescript-ts-base-mode
-    org-mode) . subword-mode))
 
-;;; Magit -- A Git Porcelain inside Emacs.
-(use-package magit
-  :ensure t
-  :bind (("C-c g g" . magit-status)
-	 ("C-c g d" . magit-dispatch)
-	 ("C-c g f" . magit-file-dispatch)))
+;;; +++ Language server protocl
 
 ;;; LSP Client -- common for many languages.
-					;TODO: Make `eglot-ensure' setup for every major-mode separately.
 (use-package eglot
+					;TODO: Make `eglot-ensure' setup for every major-mode separately.
   :ensure t
   :defer t
   :config
@@ -575,6 +567,21 @@ RET is the original return from the function."
     typescript-ts-base-mode) . eglot-ensure))
 
 
+;;; +++ Navigation and editing
+
+;;; Subword -- allows to move on sub-word in CamelCase
+(use-package subword
+					;TODO: Move subword mode into mode-specific config!
+  :defer t
+  :hook
+  ((python-mode
+    clojure-mode
+    c-mode-common
+    js-base-mode
+    typescript-ts-base-mode
+    org-mode) . subword-mode))
+
+
 ;;; +++ Lisp-common
 
 ;;; Paredit
@@ -591,6 +598,49 @@ RET is the original return from the function."
   :hook ((lisp-mode emacs-lisp-mode clojure-mode) . paredit-mode)
   :diminish)
 
+
+;;; +++ Misc
+
+;;; Rainbow-Delimiters -- colors parentheses in programming modes.
+;; (use-package rainbow-delimiters
+;;   :ensure t
+;;   :defer t
+;;   :init
+;;   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+;;   :diminish rainbow-delimiters-mode)
+
+
+
+;;; -----
+;;; Tools
+
+
+;;; +++ Version Control
+
+;;; Magit -- A Git Porcelain inside Emacs.
+(use-package magit
+  :ensure t
+  :bind (("C-c g g" . magit-status)
+	 ("C-c g d" . magit-dispatch)
+	 ("C-c g f" . magit-file-dispatch)))
+
+
+;;; +++ Kubernetes
+
+;;; Kele
+(when (>= emacs-major-version 29)
+  (use-package kele
+    :ensure t
+    :defer t
+    :bind-keymap
+    ("C-c k" . kele-command-map)
+    :config
+    ;; Temporary force kubeconfig to the default one
+    (setq kele-kubeconfig-path "~/.kube/config")))
+
+
+;;; +++ Efficient seraching and finding
+
 ;;; Amx - smex-like sorting.
 ;;; in `counsel-M-x'.
 (use-package amx
@@ -606,20 +656,6 @@ RET is the original return from the function."
 	 ("C-'" . avy-goto-char-2)
 	 ("M-g f" . avy-goto-line)
 	 ("M-g w" . avy-goto-word-1)))
-
-;;; +++ SQL indentation
-(use-package sql-indent
-  :ensure t
-  :hook
-  (sql-mode . sqlind-minor-mode))
-
-;;; Rainbow-Delimiters -- colors parentheses in programming modes.
-;; (use-package rainbow-delimiters
-;;   :ensure t
-;;   :defer t
-;;   :init
-;;   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
-;;   :diminish rainbow-delimiters-mode)
 
 
 ;;; ---
@@ -731,8 +767,20 @@ CURRENT-PYTHON - string, currently selected python version."
   :diminish python-docstring-mode)
 
 
-;;; +++-
-;;; Shell script
+;;; +++ Groovy
+
+;;; Groovy major mode
+(use-package groovy-mode
+  :ensure t
+  :defer t)
+
+
+;;; +++ Shell script
+
+(use-package sh-script
+  :defer t)
+
+;;; Flymake backend for shell scripting
 (use-package flymake-shellcheck
   :ensure t
   :defer t
@@ -740,59 +788,43 @@ CURRENT-PYTHON - string, currently selected python version."
   (add-hook 'sh-mode-hook 'flymake-shellcheck-load)
   (add-hook 'sh-mode-hook 'flymake-mode))
 
-;;; +++-
-;;; HTTP
 
-;;; Clever way of making requests.
-(use-package restclient
-  :ensure t
-  :mode ("\\.restclient\\'" . restclient-mode))
+;;; -------------------------------
+;;; Object Notation / Serialization
 
-;;; Support for 'jq'-based hooks in 'restclient'
-(use-package restclient-jq
-  :ensure t
-  :after restclient) ; note: `:after' uses eval-after-load; `:defer' should not be combined with `:after'!
+					;TODO: Add some entries here
 
-;;; jq-mode -- mainly as dependency for restclient-jq
-(use-package jq-mode
-  :ensure t
-  :defer t)
 
-;; HTTP requests lib.
-(use-package request
-  :ensure t
-  :defer t)
+;;; -----------
+;;; Query modes
 
-;;; +++-
-;;; Dockerfile
-(use-package dockerfile-mode
+
+;;; +++ SQL
+
+;;; SQL indentation
+(use-package sql-indent
   :ensure t
   :defer t
-  :config
-  (setq dockerfile-enable-auto-indent nil))
+  :hook
+  (sql-mode . sqlind-minor-mode))
 
-;;; +++-
-;;; Kubernetes
-(when (>= emacs-major-version 29)
-  (use-package kele
-    :ensure t
-    :bind-keymap
-    ("C-c k" . kele-command-map)
-    :config
-    ;; Temporary force kubeconfig to the default one
-    (setq kele-kubeconfig-path "~/.kube/config")))
 
-;;; +++-
-;;; Rego Policy
+;;; +++ Rego
+
+;;; Rego major mode
 (use-package rego-mode
   :ensure t
   :defer t)
 
-;;; +++-
-;;; Groovy
-(use-package groovy-mode
+
+;;; JQ
+
+;;; Major mode for JQ scripts
+;;; Also used as dependency for restclient-jq
+(use-package jq-mode
   :ensure t
-  :defer t)
+  :defer t
+  :mode ("\\.jq\\'"))
 
 
 ;;; ------------
@@ -805,6 +837,23 @@ CURRENT-PYTHON - string, currently selected python version."
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
   :defer t)
+
+
+;;; -------------
+;;; Styling modes
+
+					;TODO; Add some entries here
+
+;;; ----------------
+;;; Purpose-specific
+
+;;; +++-
+;;; Dockerfile
+(use-package dockerfile-mode
+  :ensure t
+  :defer t
+  :config
+  (setq dockerfile-enable-auto-indent nil))
 
 
 ;;; ------------------
@@ -873,6 +922,9 @@ CURRENT-PYTHON - string, currently selected python version."
 ;;; ----------------
 ;;; Misc major modes
 
+
+;;; +++ Diagramming
+
 ;;; PlantUML major mode.
 (use-package plantuml-mode
   :ensure t
@@ -884,11 +936,28 @@ CURRENT-PYTHON - string, currently selected python version."
   ;; Integrate with org-mode editing
   (add-to-list 'org-src-lang-modes '("plantuml" . plantuml)))
 
+
+;;; +++ Document viewer
+
 ;;; Epub reader
 (use-package nov
   :ensure t
   :defer t
   :mode ("\\.epub\\'" . nov-mode))
+
+
+;;; +++ HTTP
+
+;;; Clever way of making requests.
+(use-package restclient
+  :ensure t
+  :mode ("\\.restclient\\'" . restclient-mode))
+
+;;; Support for 'jq'-based hooks in 'restclient'
+(use-package restclient-jq
+  :ensure t
+  :if (package-installed-p 'jq-mode)
+  :after restclient)
 
 
 ;;; ----------------------------------------------
