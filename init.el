@@ -4,18 +4,16 @@
 ;;; Emacs configuration of Kristiyan Kanchev
 ;;;
 ;;; Structure of the file:
-;;; = Bootstrap
+;;; = Medium
 ;;; -- Customization file
-;;; -- OS-specific
-;;; -- Package manager
 ;;; -- Tree-sitter
-;;; = Site-specific
+;;; -- Package managers
 ;;; = Global
-;;; -- Emacs basis config
+;;; -- Emacs base config
 ;;; -- Global minor modes
 ;;; = Deferred
-;;; -- Tool modes (minor modes)
 ;;; -- Tools
+;;; -- Tool modes (minor modes)
 ;;; -- Programming modes
 ;;; -- Object Notation / Serialization
 ;;; -- Query modes
@@ -24,12 +22,19 @@
 ;;; -- Purpose-specific
 ;;; -- Organization modes
 ;;; -- Misc major modes
+;;; = Site-specific
 
 
 ;;; Code:
 ;;; ----------------------------------------------
-;;; ---------------------------------- Bootstrap ;
+;;; ------------------------------------- Medium ;
 ;;; ----------------------------------------------
+
+;;; * Setup infrastructure for extending Emacs. In this section the
+;;; * facilities and mechanisms for inatalling new modules to Emacs
+;;; * would be configured and/or executed. They might do one-time
+;;; * idempotent installation or prepare themselves for subsequent use
+;;; * in the rest of this file.
 
 
 ;;; ------------------
@@ -40,50 +45,59 @@
   (load custom-file))
 
 
-;;; ------------
-;;; OS-specific
+;;; -----------
+;;; Tree-sitter
 
-(cond
- ;; +++ Windows
- ((memq system-type '(windows-nt msdos))
+(defvar treesit-language-source-alist)
+(setq treesit-language-source-alist
+      '((elixir "https://github.com/elixir-lang/tree-sitter-elixir")
+	(heex "https://github.com/phoenixframework/tree-sitter-heex")
+	(javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
+	(typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+	(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+	(yaml "https://github.com/ikatyang/tree-sitter-yaml")))
 
-  ;; Append MSYS2 to PATH on Windows
-  (setenv "PATH" (concat "C:\\msys64\\mingw64\\bin;" (getenv "PATH")))
-  (add-to-list 'exec-path "C:\\msys64\\mingw64\\bin")
+(defconst sch/treesit-remap-alist
+  '((js-mode . js-ts-mode)
+    ;; This is just for completeness. `js-jsx-mode' is rarely directly
+    ;; executed.
+    (js-jsx-mode . js-ts-mode)
+    ;; `javascript-mode' is an alias of `js-mode' but needs to be
+    ;; declared separately. Actually, this is what triggers remap 99%
+    ;; of the time.
+    (javascript-mode . js-ts-mode)))
 
-  (setenv "PATH" (concat "C:\\msys64\\usr\\bin;" (getenv "PATH")))
-  (add-to-list 'exec-path "C:\\msys64\\usr\\bin")
+(defun sch/treesit-available-p (lang)
+  "Check if the supplied LANG (a symbol) is available for tree-sitter."
+  (when (featurep 'treesit)
+    (declare-function treesit-ready-p "treesit")
+    (treesit-ready-p lang)))
 
-  ;; Fix 'find' listing on Windows
-  (with-eval-after-load 'find-dired
-    (if (boundp 'find-ls-option)
-	(setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))))
+(defun sch/setup-treesit-grammers ()
+  "Configure Tree-Sitter grammer sources alist and install grammers.
+Needs Tree-Sitter to actually be available."
+  ;; Install the grammers (if not already installed)
+  (mapc #'treesit-install-language-grammar
+	(seq-remove (lambda (lang) (treesit-language-available-p lang))
+		    (mapcar #'car treesit-language-source-alist))))
 
- ;; +++ MacOS
- ((eval-when-compile (eq system-type 'darwin))
+					;TODO: Move re-mapping of major-modes into their indivudual setups.
+(defun sch/setup-treesit-remaps ()
+  "Make Emacs use the newer treesitter-based modes."
+  (mapc (lambda (remap-pair) (push remap-pair major-mode-remap-alist))
+	sch/treesit-remap-alist)
 
-  ;; Swap Command and Control keys on OSX because if we use Mac with
-  ;; their own keyboard and we remapped these keys in System
-  ;; Preferences.
-  (setq mac-command-modifier 'meta
-	mac-option-modifier 'super
-	mac-right-option-modifier 'control)
+  ;; Some newer modes don't have non-ts variants.
+  (push '("\\.ts\\'" . typescript-ts-mode) auto-mode-alist)
+  (push '("\\.tsx\\'" . tsx-ts-mode) auto-mode-alist))
 
-  ;; Append Homebrew bin dir to exec-path on OSX
-  (setenv "PATH" (concat "/usr/local/bin:"
-			 (expand-file-name "~/go/bin:")
-			 (getenv "PATH")))
-  (add-to-list 'exec-path "/usr/local/bin")
-  (add-to-list 'exec-path (expand-file-name "~/go/bin"))
-
-  ;; Enable emoji for macOS
-  (set-fontset-font t 'symbol "Apple Color Emoji" nil 'prepend)
-
-  ;; Force en_US.UTF-8 locale because macOS creates en_BG.UTF-8 when
-  ;; selecting English as main language and Bulgaria as
-  ;; Region. However, this locale is not defined (checked with "locale
-  ;; -a")
-  (setenv "LANG" "en_US.UTF-8")))
+;;; Check if current Emacs is built with tree-sitter support and set it up.
+(if (eval-when-compile (and (fboundp 'treesit-available-p) (treesit-available-p)))
+    (progn
+      (require 'treesit)
+      (sch/setup-treesit-grammers)
+      (sch/setup-treesit-remaps))
+  (message "Tree-Sitter not available. Skipping its initialization."))
 
 
 ;;; ----------------
@@ -160,195 +174,116 @@
   :ensure t)
 
 
-;;; -----------
-;;; Tree-sitter
-
-(defvar treesit-language-source-alist)
-(setq treesit-language-source-alist
-      '((elixir "https://github.com/elixir-lang/tree-sitter-elixir")
-	(heex "https://github.com/phoenixframework/tree-sitter-heex")
-	(javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-	(typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-	(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-	(yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-
-(defconst sch/treesit-remap-alist
-  '((js-mode . js-ts-mode)
-    ;; This is just for completeness. `js-jsx-mode' is rarely directly
-    ;; executed.
-    (js-jsx-mode . js-ts-mode)
-    ;; `javascript-mode' is an alias of `js-mode' but needs to be
-    ;; declared separately. Actually, this is what triggers remap 99%
-    ;; of the time.
-    (javascript-mode . js-ts-mode)))
-
-(defun sch/treesit-available-p (lang)
-  "Check if the supplied LANG (a symbol) is available for tree-sitter."
-  (when (featurep 'treesit)
-    (declare-function treesit-ready-p "treesit")
-    (treesit-ready-p lang)))
-
-(defun sch/setup-treesit-grammers ()
-  "Configure Tree-Sitter grammer sources alist and install grammers.
-Needs Tree-Sitter to actually be available."
-  ;; Install the grammers (if not already installed)
-  (mapc #'treesit-install-language-grammar
-	(seq-remove (lambda (lang) (treesit-language-available-p lang))
-		    (mapcar #'car treesit-language-source-alist))))
-
-					;TODO: Move re-mapping of major-modes into their indivudual setups.
-(defun sch/setup-treesit-remaps ()
-  "Make Emacs use the newer treesitter-based modes."
-  (mapc (lambda (remap-pair) (push remap-pair major-mode-remap-alist))
-	sch/treesit-remap-alist)
-
-  ;; Some newer modes don't have non-ts variants.
-  (push '("\\.ts\\'" . typescript-ts-mode) auto-mode-alist)
-  (push '("\\.tsx\\'" . tsx-ts-mode) auto-mode-alist))
-
-;;; Check if current Emacs is built with tree-sitter support and set it up.
-(if (eval-when-compile (and (fboundp 'treesit-available-p) (treesit-available-p)))
-    (progn
-      (require 'treesit)
-      (sch/setup-treesit-grammers)
-      (sch/setup-treesit-remaps))
-  (message "Tree-Sitter not available. Skipping its initialization."))
-
-
-;;; ----------------------------------------------
-;;; ------------------------------ Site-specific ;
-;;; ----------------------------------------------
-
-(defvar sch/site-config-dir (file-name-as-directory
-			     (expand-file-name "site-config"
-					       user-emacs-directory))
-  "Directory where site-specific configurations reside.")
-
-(defun sch/maybe-load-site-conf (filename)
-  "Load site-specific config contained in FILENAME.
-
-FILENAME is searched in the `site-config-dir' dir."
-  (let  ((abs-filename (concat sch/site-config-dir
-			       filename)))
-    (when (file-exists-p abs-filename)
-      (load abs-filename))))
-
-;;; Load generic site-specific configurations
-;;; Place to include ad-hoc changes or experimentation to the
-;;; initialization logic specific for a given site. File is not version
-;;; controlled and is missing by default.
-;;; _NOTE_: If some requred library is expected to have site-specific
-;;; configuration every time, it's better to split it under its own
-;;; file under `site-config'.
-;;; _NOTE_: Be careful when mutating varialbes (functions like
-;;; `add-to-list' and firends) because they might not be loaded
-;;; yet. Use `eval-after-load' when working with such variables.
-(sch/maybe-load-site-conf "site-generic.el")
-
-
 ;;; ----------------------------------------------
 ;;; ------------------------------------- Global ;
 ;;; ----------------------------------------------
 
-
-;;; ------------------
-;;; Emacs basis config
-					;todo: Use-package for the following configuration!
-
-;;; Disable toobar.
-(tool-bar-mode -1)
-
-;;; Navigation numbers here and there.
-(setq column-number-mode t)	    ; show column number in modeline
-(if (eval-when-compile (>= emacs-major-version 26))	; display line numbers
-    (global-display-line-numbers-mode)
-  (global-linum-mode t))
-
-;;; Fix scroll.
-(setq scroll-conservatively 10000)    ; allow to scrol line-by-line
-
-;;; Parentheses stuff
-(electric-pair-mode)		      ; auto-close parentheses
-(show-paren-mode)		      ; show matching parentheses
-
-;;; Delete trailing space before save.
-(add-hook 'before-save-hook
-	  'delete-trailing-whitespace)	       ; delete whitespaces
-(put 'dired-find-alternate-file 'disabled nil) ; reuse dired buffers
-
-;;; Shows current function name -- in the header for modes are
-;;; specified in `sch/which-function-in-header-modes'
-(defvar sch/which-function-in-header-modes '(python-mode))
-(defvar-local sch/which-function-in-mode-line t)
-
-(defun sch/which-function-in-header ()
-  "Puts `which-function' output in header line for the designated modes."
-  (setq sch/which-function-in-mode-line
-	(not (memq major-mode sch/which-function-in-header-modes)))
-  (unless sch/which-function-in-mode-line
-      (setq header-line-format '(" " which-func-format " "))))
-
-(defun sch/which-function-disable-mode-line ()
-  "Don't show `which-function' in modes that want to show it in header."
-  (let ((old-construct (assq 'which-function-mode mode-line-misc-info))
-	(misc-info (assq-delete-all 'which-function-mode mode-line-misc-info)))
-    (add-to-list 'misc-info
-		 (list 'sch/which-function-in-mode-line old-construct))
-    (setq mode-line-misc-info misc-info)))
-
-(add-hook 'after-change-major-mode-hook 'sch/which-function-in-header)
-(which-function-mode t)
-(sch/which-function-disable-mode-line)
-
-;;; find-grep-dired to not recurse in .svn folder
-(with-eval-after-load 'find-dired
-  (if (boundp 'find-grep-options)
-      (setq find-grep-options "-Iq --exclude=\"*\\.svn*\"")))
-
-;;; Prevent accidental exiting
-(setq confirm-kill-emacs 'y-or-n-p)
-
-;;; Email config
-					;TODO; -- configure sending mail properly by using SMTP submission.
-(setq send-mail-function    'smtpmail-send-it
-      user-mail-address     "skrechy@gmail.com"
-      smtpmail-smtp-server  "smtp.gmail.com"
-      smtpmail-stream-type  'ssl
-      smtpmail-smtp-service 465)
-
-;;; Abbreviate long path-like Git branch names
-(defun shorten-git-mode-line (return-string)
-  "Abbreviates path-like Git branches and preserves the prefix.
-RETURN-STRING - the string returned by `vc-git-mode-line-string'."
-  (let ((prefix (substring return-string 0 4)))
-    (concat prefix (replace-regexp-in-string "\\([^/]\\{2\\}\\)[^/]*/"
-					     "\\1/"
-					     return-string
-					     nil nil nil 4))))
-(advice-add 'vc-git-mode-line-string
-	    :filter-return
-	    'shorten-git-mode-line)
-
-;;; Auth-source
-;;; Enable `password-store' -- that is, integrate with `pass' UNIX
-;;; utility. We enabled it at the end of auth-sources, so that
-;;; `.authinfo' files take precendence (especially the un-encrypted
-;;; one) for easier ad-hoc experiments.
-;;; (require 'auth-source-pass)
-(with-eval-after-load 'auth-source
-  ;; Require the builtin 'pass'-integration library so registration
-  ;; hooks can run.
-  (require 'auth-source-pass)
-
-  ;; Customize `auth-sources'. Put `.authinfo' files (unencrypted and
-  ;; encrypted) before `password-store' for easier ad-hoc
-  ;; customizations when needed. Otherwise, all my passwords are saved
-  ;; in 'pass'
-  (if (boundp 'auth-sources)
-      (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" password-store))))
+;;; * Global (always-on) configuration. These modes might provide
+;;; * essential and/or advanced functionality. Note, packages related
+;;; * to the one being configured are allowed in this section even if
+;;; * they are not providing global minor mode, or are themselves more
+;;; * like tools (and thus seem to fit better different sections in
+;;; * this file).
 
 
-;;; ------------------
+;;; -------------------
+;;; Base customizations
+
+;;; * Configuration of variables and behaviours part of the Emacs
+;;; * base. The base consists of packages that are part of Emacs
+;;; * distribution and are *already loaded* on startup. These are
+;;; * mostly variable configurations defined in C source, but might
+;;; * also include fundamental behaviours, GUI setup, and
+;;; * environment-dependent tuning. Let's imagine Emacs base as
+;;; * C-source and very thin layer of Elisp comprising of modules such
+;;; * as startup.el, simple.el, files.el and some other. It OK to
+;;; * place here things that *feel* fundamental, or you can't decide
+;;; * where to put. However, if the facility being considered can even
+;;; * remotely be classified as a sub-system in spite of being
+;;; * perceived as fundamental, such as Dired, separate it into its
+;;; * own section, especially if custom defuns are needed.
+
+(use-package emacs
+  :config
+  ;; +++ Emacs-wide varialbes
+  (setq user-mail-address "skrechy@gmail.com")
+
+  ;; +++ Behaviours
+  ;; Scroll by line
+  (setq scroll-conservatively 10000)
+
+  ;; Prevent accidental exiting
+  (setq confirm-kill-emacs 'y-or-n-p)
+
+  ;; Delete trailing whitespace before save.
+  (add-hook 'before-save-hook
+	    'delete-trailing-whitespace)
+
+  ;; +++ GUI
+  ;; Disable the toolbar with icons
+  (tool-bar-mode -1)
+
+  ;; +++ Editing
+  ;; Auto-close parentheses
+  (electric-pair-mode)
+
+  ;; Show matching parentheses
+  (show-paren-mode)
+
+  ;; Disable tabs as indentation by default
+  (setq-default indent-tabs-mode nil)
+
+;;; +++ Visual
+  ;; Show line numbers in the fringe
+  (if (eval-when-compile (>= emacs-major-version 26))
+      (global-display-line-numbers-mode)
+    (global-linum-mode t))
+
+  ;; Show column number in modeline
+  (setq column-number-mode t)
+
+  ;; *** OS-specific
+  (cond
+   ;; Windows
+   ((memq system-type '(windows-nt msdos))
+    ;; Append MSYS2 to PATH on Windows
+    (setenv "PATH" (concat "C:\\msys64\\mingw64\\bin;" (getenv "PATH")))
+    (add-to-list 'exec-path "C:\\msys64\\mingw64\\bin")
+    (setenv "PATH" (concat "C:\\msys64\\usr\\bin;" (getenv "PATH")))
+    (add-to-list 'exec-path "C:\\msys64\\usr\\bin")
+
+    ;; Fix 'find' listing on Windows
+    (with-eval-after-load 'find-dired
+      (if (boundp 'find-ls-option)
+	  (setq find-ls-option '("-exec ls -ldh {} +" . "-ldh")))))
+
+   ;; MacOS
+   ((eval-when-compile (eq system-type 'darwin))
+    ;; Swap Command and Control keys on OSX because if we use Mac with
+    ;; their own keyboard and we remapped these keys in System
+    ;; Preferences.
+    (setq mac-command-modifier 'meta
+	  mac-option-modifier 'super
+	  mac-right-option-modifier 'control)
+
+    ;; Append Homebrew bin dir to exec-path on OSX
+    (setenv "PATH" (concat "/usr/local/bin:"
+			   (expand-file-name "~/go/bin:")
+			   (getenv "PATH")))
+    (add-to-list 'exec-path "/usr/local/bin")
+    (add-to-list 'exec-path (expand-file-name "~/go/bin"))
+
+    ;; Enable emoji for macOS
+    (set-fontset-font t 'symbol "Apple Color Emoji" nil 'prepend)
+
+    ;; Force en_US.UTF-8 locale because macOS creates en_BG.UTF-8 when
+    ;; selecting English as main language and Bulgaria as
+    ;; Region. However, this locale is not defined (checked with "locale
+    ;; -a")
+    (setenv "LANG" "en_US.UTF-8"))))
+
+
+;;; ----------------------------------------------
 ;;; Global minor modes
 
 ;;; Theme
@@ -365,6 +300,34 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
   ;; 	solarized-height-plus-3 1.0
   ;; 	solarized-height-plus-4 1.0)
   (load-theme 'solarized-light t))
+
+;;; Which-function (builtin) -- Shows which function the pointer is at in the minibuffer.
+(use-package which-func
+  :config
+  (add-hook 'after-change-major-mode-hook 'sch/which-function-in-header)
+  (which-function-mode)
+  ;; Change the global mode-line *template*.
+  (sch/which-function-disable-mode-line)
+  :preface
+  ;; Shows current function name -- in the header for modes are
+  ;; specified in `sch/which-function-in-header-modes'
+  (defvar sch/which-function-in-header-modes '(python-mode))
+  (defvar-local sch/which-function-in-mode-line t)
+
+  (defun sch/which-function-in-header ()
+    "Puts `which-function' output in header line for the designated modes."
+    (setq sch/which-function-in-mode-line
+	  (not (memq major-mode sch/which-function-in-header-modes)))
+    (unless sch/which-function-in-mode-line
+      (setq header-line-format '(" " which-func-format " "))))
+
+  (defun sch/which-function-disable-mode-line ()
+    "Don't show `which-function' in modes that want to show it in header."
+    (let ((old-construct (assq 'which-function-mode mode-line-misc-info))
+	  (misc-info (assq-delete-all 'which-function-mode mode-line-misc-info)))
+      (add-to-list 'misc-info
+		   (list 'sch/which-function-in-mode-line old-construct))
+      (setq mode-line-misc-info misc-info))))
 
 ;;; Projectile
 (use-package projectile
@@ -401,11 +364,13 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
   :ensure t
   :after ivy)
 
-;;; Swiper -- Isearch on steroids using Ivy.
+;;; Swiper -- Isearch on steroids using Ivy. Swiper is actually a
+;;; "tool" (in my own terminology) but `counsel' depends on it, so
+;;; it's easier to demand load it here.
 (use-package swiper
   :ensure t
-  :requires ivy
   :demand t
+  :requires ivy
   :bind
   (("C-s" . swiper-isearch)
    ("M-s ." . swiper-isearch-thing-at-point)))
@@ -439,8 +404,7 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 ;;; Counsel-projectile -- Integrates projectile with Ivy
 (use-package counsel-projectile
   :ensure t
-  :requires (counsel projectile)
-  :demand t
+  :after (counsel projectile)
   :config
   (counsel-projectile-mode)
   :diminish)
@@ -448,7 +412,7 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 ;;; Counsel-Gtags -- ivy interface to gtags.
 (use-package counsel-gtags
   :ensure t
-  :if (featurep 'counsel)
+  :requires counsel
   :defer t
   :bind (:map counsel-gtags-mode-map
 	      ("M-." . counsel-gtags-find-definition)
@@ -463,35 +427,38 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 ;;; Company-mode
 (use-package company
   :ensure t
-  :init
-  (global-company-mode)
-  :config
-  (setq company-show-quick-access t)
+  :demand t
   :bind
   (("C-c a" . company-complete-tooltip-row))
+  :config
+  (setq company-show-quick-access t)
+  (global-company-mode)
   :diminish company-mode)
 
 ;;; Which key
 (use-package which-key
   :ensure t
-  :init
+  :demand t
+  :config
   (which-key-mode)
   :diminish which-key-mode)
 
-;;; Yasnippet
-(use-package yasnippet-snippets
-  :ensure t)
-
 (use-package yasnippet
   :ensure t
-  :after (yasnippet-snippets)
-  :init
+  :demand t
+  :config
   (yas-global-mode)
   :diminish yas-minor-mode)
+
+;;; Yasnippet
+(use-package yasnippet-snippets
+  :ensure t
+  :after yasnippet)
 
 ;;; EditorConfig support
 (use-package editorconfig
   :ensure t
+  :demand t
   :config
   (editorconfig-mode 1)
   :diminish)
@@ -501,9 +468,127 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 ;;; ----------------------------------- Deferred ;
 ;;; ----------------------------------------------
 
+;;; * Configuration for deferred packages. They might be one of the
+;;; * following categories: Tools, Tool modes or Major modes.  Tools
+;;; * are packages providing stand-alone functionality. This includes
+;;; * interactive functions or library-type of code that is used by
+;;; * other modes or functions. Interactive might include some one-off
+;;; * actions or dispatching to thier own internal major mode. Tool
+;;; * modes are non-global minor modes that provide some funcitonality
+;;; * in the context of some major mode. Tool modes tend to provide
+;;; * generic functionality that might be further cusmomized to
+;;; * specific major mode (usually by mechanism similar to
+;;; * "backends"). Place tools and tool modes here, when they are
+;;; * shared by more than one consumming mode (thus, common in their
+;;; * name). Major modes need no explanaition. Major modes are
+;;; * categorized by functional domain. It's preferred to place a
+;;; * tool, tool mode or tool backend (plugin/addon) along with its
+;;; * major mode if it has a meaning only fot that major mode. Since
+;;; * major modes often need no customization on their own its common
+;;; * to have sections with only tools definitions that register into
+;;; * the mode's hooks.
 
-;;; --------------------------------
+
+;;; ----------------------------------------------
+;;; Tools
+
+;;; ++* Auth and encryption
+
+;;; Auth-source-pass (builtin) -- Integrate with `pass' UNIX utility.
+(use-package auth-source-pass
+  :after auth-source
+  :config
+  (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" password-store)))
+
+
+;;; +++ File browsing
+
+;;; Dired (builtin)
+(use-package dired
+  :defer t
+  :config
+  ;; Reuse Dired buffers
+  (put 'dired-find-alternate-file 'disabled nil))
+
+;;; Grep in Dired to not recurse into .svn directories
+(use-package find-dired
+  :defer t
+  :config
+  (setq find-grep-options "-Iq --exclude=\"*\\.svn*\""))
+
+
+;;; +++ Version Control
+
+;;; VC-Git (builtin) -- The code that shows Git info in the minibuffer.
+(use-package vc-git
+  :defer t
+  :config
+  ;; Abbreviate long path-like Git branch names
+  (advice-add 'vc-git-mode-line-string
+	      :filter-return
+	      'shorten-git-mode-line)
+  :preface
+  (defun shorten-git-mode-line (return-string)
+    "Abbreviates path-like Git branches and preserves the prefix.
+RETURN-STRING - the string returned by `vc-git-mode-line-string'."
+    (let ((prefix (substring return-string 0 4)))
+      (concat prefix (replace-regexp-in-string "\\([^/]\\{2\\}\\)[^/]*/"
+					       "\\1/"
+					       return-string
+					       nil nil nil 4)))))
+
+;;; Magit -- A Git Porcelain inside Emacs.
+(use-package magit
+  :ensure t
+  :bind (("C-c g g" . magit-status)
+	 ("C-c g d" . magit-dispatch)
+	 ("C-c g f" . magit-file-dispatch)))
+
+
+;;; +++ Kubernetes
+
+;;; Kele
+(when (>= emacs-major-version 29)
+  (use-package kele
+    :ensure t
+    :defer t
+    :bind-keymap
+    ("C-c k" . kele-command-map)
+    :config
+    ;; Temporary force kubeconfig to the default one
+    (setq kele-kubeconfig-path "~/.kube/config")))
+
+
+;;; +++ Efficient seraching and finding
+
+;;; Amx - smex-like sorting.
+;;; Used by "counsel-M-x".
+(use-package amx
+  :ensure
+  :defer t)
+
+;;; Avy -- Jump to visible text
+;;; Also used by "counsel"
+(use-package avy
+  :ensure t
+  :defer t
+  :bind (("C-:" . avy-goto-char)
+	 ("C-'" . avy-goto-char-2)
+	 ("M-g f" . avy-goto-line)
+	 ("M-g w" . avy-goto-word-1)))
+
+
+;;; ----------------------------------------------
 ;;; Tool modes (minor modes)
+
+
+;;; +++ Navigation and editing
+
+;;; Subword -- allows to move on sub-word in CamelCase
+(use-package subword
+  :defer t
+  :hook
+  ((prog-mode org-mode) . subword-mode))
 
 
 ;;; +++ On-the-fly analisys
@@ -543,7 +628,6 @@ RET is the original return from the function."
 
 ;;; LSP Client -- common for many languages.
 (use-package eglot
-					;TODO: Make `eglot-ensure' setup for every major-mode separately.
   :ensure t
   :defer t
   :config
@@ -565,21 +649,6 @@ RET is the original return from the function."
     go-mode
     js-base-mode
     typescript-ts-base-mode) . eglot-ensure))
-
-
-;;; +++ Navigation and editing
-
-;;; Subword -- allows to move on sub-word in CamelCase
-(use-package subword
-					;TODO: Move subword mode into mode-specific config!
-  :defer t
-  :hook
-  ((python-mode
-    clojure-mode
-    c-mode-common
-    js-base-mode
-    typescript-ts-base-mode
-    org-mode) . subword-mode))
 
 
 ;;; +++ Lisp-common
@@ -608,54 +677,6 @@ RET is the original return from the function."
 ;;   :init
 ;;   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
 ;;   :diminish rainbow-delimiters-mode)
-
-
-
-;;; -----
-;;; Tools
-
-
-;;; +++ Version Control
-
-;;; Magit -- A Git Porcelain inside Emacs.
-(use-package magit
-  :ensure t
-  :bind (("C-c g g" . magit-status)
-	 ("C-c g d" . magit-dispatch)
-	 ("C-c g f" . magit-file-dispatch)))
-
-
-;;; +++ Kubernetes
-
-;;; Kele
-(when (>= emacs-major-version 29)
-  (use-package kele
-    :ensure t
-    :defer t
-    :bind-keymap
-    ("C-c k" . kele-command-map)
-    :config
-    ;; Temporary force kubeconfig to the default one
-    (setq kele-kubeconfig-path "~/.kube/config")))
-
-
-;;; +++ Efficient seraching and finding
-
-;;; Amx - smex-like sorting.
-;;; in `counsel-M-x'.
-(use-package amx
-  :ensure
-  :defer t)
-
-;;; Avy -- Jump to visible text
-;;; Also used by `counsel'
-(use-package avy
-  :ensure t
-  :defer t
-  :bind (("C-:" . avy-goto-char)
-	 ("C-'" . avy-goto-char-2)
-	 ("M-g f" . avy-goto-line)
-	 ("M-g w" . avy-goto-word-1)))
 
 
 ;;; ---
@@ -706,9 +727,8 @@ RET is the original return from the function."
 
 (use-package python
   :defer t
-  :init
-  (add-hook 'python-mode-hook 'sch/python-inline-comment-offset)
   :config
+  (add-hook 'python-mode-hook 'sch/python-inline-comment-offset)
   ;; Make indentation compatible with black
   (setq python-indent-def-block-scale 1))
 
@@ -742,11 +762,10 @@ CURRENT-PYTHON - string, currently selected python version."
   ;; Change mode-line func.
   (setq pyenv-modeline-function 'sch/pyenv-modeline-function)
 
-  ;; TODO: See the comment below for deferring.
+					;TODO: Find a way to properly defer activating the global minor mode.
   (global-pyenv-mode 1)
   :bind (("C-c v" . pyenv-use))
   :hook (
-					;TODO: Find a way to properly defer activating the global minor mode.
 	 ;; (python-mode . global-pyenv-mode)
 	 (pyenv-mode . sch/restart-eglot-on-pyenv-change)))
 
@@ -956,6 +975,38 @@ CURRENT-PYTHON - string, currently selected python version."
   :ensure t
   :if (package-installed-p 'jq-mode)
   :after restclient)
+
+
+;;; ----------------------------------------------
+;;; ------------------------------ Site-specific ;
+;;; ----------------------------------------------
+
+;;; * Custom implementation of site-specific configuration
+;;; * loading. This allows keeping this init file as generic as
+;;; * possible and specify overrides (and maybe keeping/handling
+;;; * secrets) depending on the place I'm working from.
+
+
+(defvar sch/site-config-dir (file-name-as-directory
+			     (expand-file-name "site-config"
+					       user-emacs-directory))
+  "Directory where site-specific configurations reside.")
+
+(defun sch/maybe-load-site-conf (filename)
+  "Load site-specific config contained in FILENAME.
+
+FILENAME is searched in the `site-config-dir' dir."
+  (let  ((abs-filename (concat sch/site-config-dir
+			       filename)))
+    (when (file-exists-p abs-filename)
+      (load abs-filename))))
+
+;;; Load generic site-specific configurations File is not version
+;;; controlled and is missing by default.
+;;; _NOTE_: If some requred library is expected to have site-specific
+;;; configuration every time, it's better to split it under its own
+;;; file under `site-config'.
+(sch/maybe-load-site-conf "site-init.el")
 
 
 ;;; ----------------------------------------------
