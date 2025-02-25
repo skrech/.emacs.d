@@ -57,16 +57,6 @@
 	(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
 	(yaml "https://github.com/ikatyang/tree-sitter-yaml")))
 
-(defconst sch/treesit-remap-alist
-  '((js-mode . js-ts-mode)
-    ;; This is just for completeness. `js-jsx-mode' is rarely directly
-    ;; executed.
-    (js-jsx-mode . js-ts-mode)
-    ;; `javascript-mode' is an alias of `js-mode' but needs to be
-    ;; declared separately. Actually, this is what triggers remap 99%
-    ;; of the time.
-    (javascript-mode . js-ts-mode)))
-
 (defun sch/treesit-available-p (lang)
   "Check if the supplied LANG (a symbol) is available for tree-sitter."
   (when (featurep 'treesit)
@@ -81,22 +71,11 @@ Needs Tree-Sitter to actually be available."
 	(seq-remove (lambda (lang) (treesit-language-available-p lang))
 		    (mapcar #'car treesit-language-source-alist))))
 
-					;TODO: Move re-mapping of major-modes into their indivudual setups.
-(defun sch/setup-treesit-remaps ()
-  "Make Emacs use the newer treesitter-based modes."
-  (mapc (lambda (remap-pair) (push remap-pair major-mode-remap-alist))
-	sch/treesit-remap-alist)
-
-  ;; Some newer modes don't have non-ts variants.
-  (push '("\\.ts\\'" . typescript-ts-mode) auto-mode-alist)
-  (push '("\\.tsx\\'" . tsx-ts-mode) auto-mode-alist))
-
 ;;; Check if current Emacs is built with tree-sitter support and set it up.
 (if (eval-when-compile (and (fboundp 'treesit-available-p) (treesit-available-p)))
     (progn
       (require 'treesit)
-      (sch/setup-treesit-grammers)
-      (sch/setup-treesit-remaps))
+      (sch/setup-treesit-grammers))
   (message "Tree-Sitter not available. Skipping its initialization."))
 
 
@@ -719,6 +698,40 @@ RET is the original return from the function."
       (push '(elixir-mode . elixir-ts-mode) major-mode-remap-alist))))
 
 
+;;; +++ Javascript
+
+;;; Javascript (builtin) -- package for javascript major mode with
+;;; regex or ts variant.
+(use-package js
+  :defer t
+  :init
+  (when (sch/treesit-available-p 'javascript)
+    (setq major-mode-remap-alist
+	  (append '((js-mode . js-ts-mode)
+		    ;; This is just for completeness. `js-jsx-mode' is rarely directly
+		    ;; executed.
+		    (js-jsx-mode . js-ts-mode)
+		    ;; `javascript-mode' is an alias of `js-mode' but needs to be
+		    ;; declared separately. Actually, this is what triggers remap 99%
+		    ;; of the time.
+		    (javascript-mode . js-ts-mode))
+		  major-mode-remap-alist)))
+  :bind (;; JS mode defines its own find-symbol func. It's worthless
+	 ;; but shadows the eglot keybinding, so remove it.
+	 :map js-mode-map
+	 ("M-." . nil)
+	 :map js-ts-mode-map
+	 ("M-." . nil)))
+
+
+;;; Typescript (builtin)
+(use-package typescript-ts-mode
+  :defer t
+  :if (sch/treesit-available-p 'typescript)
+  :init
+  (push '("\\.ts\\'" . typescript-ts-mode) auto-mode-alist)
+  (push '("\\.tsx\\'" . tsx-ts-mode) auto-mode-alist))
+
 ;;; +++ Python
 
 (defun sch/python-inline-comment-offset ()
@@ -795,9 +808,6 @@ CURRENT-PYTHON - string, currently selected python version."
 
 
 ;;; +++ Shell script
-
-(use-package sh-script
-  :defer t)
 
 ;;; Flymake backend for shell scripting
 (use-package flymake-shellcheck
@@ -927,7 +937,6 @@ CURRENT-PYTHON - string, currently selected python version."
   (org-babel-do-load-languages 'org-babel-load-languages
 			       '((emacs-lisp . t)
 				 (plantuml . t))))
-
 
 ;;; Org community contributions
 ;; (use-package org-contrib
