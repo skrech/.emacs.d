@@ -314,7 +314,7 @@ Needs Tree-Sitter to actually be available."
   :init
   (projectile-mode)
   :config
-  (setq projectile-indexing-method 'native
+  (setq projectile-indexing-method 'hybrid
 	projectile-enable-caching t
 	projectile-mode-line-function '(lambda () (format " Prj[%s]" (projectile-project-name)))
 	;; projectile-svn-command "svn list -R --include-externals . | grep -v '/$' | tr '\\n' '\\0'"
