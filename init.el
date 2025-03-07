@@ -630,9 +630,28 @@ RET is the original return from the function."
     typescript-ts-base-mode) . eglot-ensure))
 
 
-;;; +++ Lisp-common
+;;; +++ Paren matching
 
-;;; Paredit
+                                        ;TODO: Move electric-pair-mode
+                                        ;setup here and setup it for
+                                        ;text modes, org, python, etc.
+;; (use-package elec-pair
+;;   :ensure t
+;;   :defer t
+;;   :hook ((text-mode org-mode markdown-mode) . electric-pair-mode))
+
+
+;;; Smartparens -- For all modes that use complex delimiters
+(use-package smartparens
+  :ensure t
+  :defer t
+  :hook ((elixir-mode elixir-ts-mode) . smartparens-mode)
+  :config
+  ;; load default config
+  (require 'smartparens-config)
+  :diminish)
+
+;;; Paredit -- Common for all Lisp modes
 (use-package paredit
   :ensure t
   :defer t
