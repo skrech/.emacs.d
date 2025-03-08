@@ -640,16 +640,28 @@ RET is the original return from the function."
 ;;   :defer t
 ;;   :hook ((text-mode org-mode markdown-mode) . electric-pair-mode))
 
-
-;;; Smartparens -- For all modes that use complex delimiters
-(use-package smartparens
+;;; Ruby-end -- mode for handling ruby-like do..end blocks
+(use-package ruby-end
   :ensure t
   :defer t
-  :hook ((elixir-mode elixir-ts-mode) . smartparens-mode)
-  :config
-  ;; load default config
-  (require 'smartparens-config)
+  :hook ((elixir-mode elixir-ts-mode) . sch/activate-ruby-end-mode-for-elixir)
+  :preface
+  (defun sch/activate-ruby-end-mode-for-elixir ()
+    (set (make-local-variable 'ruby-end-expand-keywords-before-re)
+         "\\(?:^\\|\\s-+\\)\\(?:do\\)")
+    (set (make-local-variable 'ruby-end-check-statement-modifiers) nil)
+    (ruby-end-mode))
   :diminish)
+
+;;; Smartparens -- For all modes that use complex delimiters
+;; (use-package smartparens
+;;   :ensure t
+;;   :defer t
+;;   :hook ((elixir-mode elixir-ts-mode) . smartparens-mode)
+;;   :config
+;;   ;; load default config
+;;   (require 'smartparens-config)
+;;   :diminish)
 
 ;;; Paredit -- Common for all Lisp modes
 (use-package paredit
