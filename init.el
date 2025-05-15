@@ -899,6 +899,13 @@ CURRENT-PYTHON - string, currently selected python version."
   :defer t)
 
 
+;;; YAML TS (builtin)
+(use-package yaml-ts-mode
+  :defer t
+  :if (sch/treesit-available-p 'yaml)
+  :init
+  (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode)))
+
 ;;; -------------
 ;;; Styling modes
 
