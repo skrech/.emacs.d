@@ -53,6 +53,7 @@
       '((elixir "https://github.com/elixir-lang/tree-sitter-elixir")
 	(heex "https://github.com/phoenixframework/tree-sitter-heex")
 	(javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
+        (jsdoc "https://github.com/tree-sitter/tree-sitter-jsdoc")
 	(typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
 	(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
 	(yaml "https://github.com/ikatyang/tree-sitter-yaml")))
@@ -729,39 +730,67 @@ RET is the original return from the function."
       (push '(elixir-mode . elixir-ts-mode) major-mode-remap-alist))))
 
 
-;;; +++ Javascript
+;;; +++ Javascript/Typescript/JSX/TSX
 
-;;; Javascript (builtin) -- package for javascript major mode with
-;;; regex or ts variant.
+;;; Javascript (builtin)
 (use-package js
   :defer t
-  :init
-  (when (sch/treesit-available-p 'javascript)
-    (setq major-mode-remap-alist
-	  (append '((js-mode . js-ts-mode)
-		    ;; This is just for completeness. `js-jsx-mode' is rarely directly
-		    ;; executed.
-		    (js-jsx-mode . js-ts-mode)
-		    ;; `javascript-mode' is an alias of `js-mode' but needs to be
-		    ;; declared separately. Actually, this is what triggers remap 99%
-		    ;; of the time.
-		    (javascript-mode . js-ts-mode))
-		  major-mode-remap-alist)))
   :bind (;; JS mode defines its own find-symbol func. It's worthless
 	 ;; but shadows the eglot keybinding, so remove it.
 	 :map js-mode-map
 	 ("M-." . nil)
 	 :map js-ts-mode-map
-	 ("M-." . nil)))
+	 ("M-." . nil))
+  :config
+  (setq js-indent-level 2))
 
-
-;;; Typescript (builtin)
-(use-package typescript-ts-mode
+(use-package rjsx-mode
+  :ensure t
   :defer t
-  :if (sch/treesit-available-p 'typescript)
-  :init
-  (push '("\\.ts\\'" . typescript-ts-mode) auto-mode-alist)
-  (push '("\\.tsx\\'" . tsx-ts-mode) auto-mode-alist))
+  :mode ("\\.jsx\\'" "components\\/.*\\.js\\'"))
+
+;;; Typescript (builtin, Tree-Sitter only)
+(when (sch/treesit-available-p 'typescript)
+  (use-package typescript-ts-mode
+    :defer t
+    :init
+    (push '("\\.ts\\'" . typescript-ts-mode) auto-mode-alist)
+    (push '("\\.tsx\\'" . tsx-ts-mode) auto-mode-alist))
+  :config
+  (setq typescript-ts-mode-indent-offset 2))
+
+
+;;;  Javascript/Typescript/JSX/TSX (Tree-sitter only)
+(when (sch/treesit-available-p 'javascript)
+  (use-package jtsx
+    :ensure t
+    :defer t
+    :hook (              ;TODO: Mode this config into Hideshow section
+           (jtsx-jsx-mode . hs-minor-mode)
+           (jtsx-tsx-mode . hs-minor-mode)
+           (jtsx-typescript-mode . hs-minor-mode))
+    :init
+    (add-to-list 'major-mode-remap-alist '(js-mode . jtsx-jsx-mode))
+    ;; `javascript-mode' is an alias of `js-mode' but needs to be
+    ;; declared separately. Actually, this is what triggers remap 99% of
+    ;; the time.
+    (add-to-list 'major-mode-remap-alist '(javascript-mode . jtsx-jsx-mode))
+    (add-to-list 'major-mode-remap-alist '(rjsx-mode . jtsx-jsx-mode))
+    (add-to-list 'major-mode-remap-alist '(typescript-ts-mode . jtsx-typescript-mode))
+    (add-to-list 'major-mode-remap-alist '(tsx-ts-mode . jtsx-tsx-mode))))
+
+(use-package flymake-eslint
+  :ensure t
+  :defer t
+  :hook
+  ( ;; The following doesn't work because of
+    ;; https://github.com/orzechowskid/flymake-eslint/issues/23
+    ;; (js-base-mode typescript-ts-base-mode) . flymake-eslint-enable)
+   eglot-managed-mode . (lambda ()
+                          (message "first yes")
+                          (when (derived-mode-p 'js-base-mode 'typescript-ts-base-mode)
+                            (message "second yes")
+                            (flymake-eslint-enable)))))
 
 ;;; +++ Python
 
