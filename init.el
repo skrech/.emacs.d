@@ -595,7 +595,15 @@ RET is the original return from the function."
 (use-package flyspell
   :defer t
   :hook
-  (text-mode . flyspell-mode)
+  ;; Full spell-checking
+  ((text-mode . flyspell-mode)
+
+   ;; Prog spell-checking
+   ((python-mode
+     elixir-ts-mode
+     go-mode
+     js-base-mode
+     typescript-ts-base-mode) . flyspell-prog-mode))
   :diminish)
 
 ;;; ElDoc -- just diminish the minor mode.
