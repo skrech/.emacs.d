@@ -795,10 +795,13 @@ RET is the original return from the function."
     ;; https://github.com/orzechowskid/flymake-eslint/issues/23
     ;; (js-base-mode typescript-ts-base-mode) . flymake-eslint-enable)
    eglot-managed-mode . (lambda ()
-                          (message "first yes")
                           (when (derived-mode-p 'js-base-mode 'typescript-ts-base-mode)
-                            (message "second yes")
                             (flymake-eslint-enable)))))
+
+(use-package prettier-js
+  :ensure t
+  :defer t
+  :commands prettier-js)
 
 ;;; +++ Python
 
