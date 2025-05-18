@@ -102,7 +102,7 @@ Needs Tree-Sitter to actually be available."
 ;; byte-compiler (for linting) is always started with `emacs -q'
 ;; switch, which doesn't initialize the packages as normal (see the
 ;; docs of `package.el'). That's why we introduced early-init.el and
-;; manually cal `package-initialize', so the code for byte-compiler
+;; manually call `package-initialize', so the code for byte-compiler
 ;; and interpreter are the same.
 
 ;; -- WARNING: I came up with this solution *myself*. Check from time to
@@ -633,6 +633,7 @@ RET is the original return from the function."
 	      ("C-c e f" . eglot-format))
   :hook
   ((python-mode
+    elixir-mode
     elixir-ts-mode
     go-mode
     js-base-mode
@@ -723,20 +724,25 @@ RET is the original return from the function."
 
 ;;; +++ Elixir
 
-;;; Major mode for Elixir development with Tree-sitter suppoort
+(when (<= emacs-major-version 29)
+    ;; Elixir support is natively added in Emacs 30. So, until then,
+    ;; install elixir-mode from MELPA.
+    (use-package elixir-mode
+      :ensure t
+      :defer t
+      :mode ("\\.ex\\'" "\\.exs\\'" "mix\\.lock" "\\.elixir\\'")))
+
+;; Major mode for Elixir development with Tree-sitter support. Again,
+;; it's a builtin mode starting from Emacs 30, however, there is a
+;; backported package for 29 (hence the overlap in the ranges in this
+;; config).
 (when (>= emacs-major-version 29)
   (use-package elixir-ts-mode
     :ensure t
     :defer t
     :if (sch/treesit-available-p 'elixir)
     :init
-    ;; Emacs 30 has builtin support for `elixir-mode' and
-    ;; `elixir-ts-mode', so we only remap. Older versions of Emacs will
-    ;; automatically update 'auto-mode-alist' from the autoloads in the
-    ;; (backported/this) MELPA package.
-    (when (>= emacs-major-version 30)
-      (push '(elixir-mode . elixir-ts-mode) major-mode-remap-alist))))
-
+    (add-to-list 'major-mode-remap-alist '(elixir-mode . elixir-ts-mode))))
 
 ;;; +++ Javascript/Typescript/JSX/TSX
 
