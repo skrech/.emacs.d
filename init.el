@@ -602,7 +602,9 @@ RET is the original return from the function."
    ((python-mode
      elixir-ts-mode
      go-mode
-     js-base-mode
+     ;; js-base-mode
+     js-mode
+     js-ts-mode
      typescript-ts-base-mode) . flyspell-prog-mode))
   :diminish)
 
@@ -636,7 +638,10 @@ RET is the original return from the function."
     elixir-mode
     elixir-ts-mode
     go-mode
-    js-base-mode
+    ;; Commneted because of Emacs 27
+    ;; js-base-mode
+    js-mode
+    js-ts-mode
     typescript-ts-base-mode) . eglot-ensure))
 
 
@@ -753,8 +758,9 @@ RET is the original return from the function."
 	 ;; but shadows the eglot keybinding, so remove it.
 	 :map js-mode-map
 	 ("M-." . nil)
-	 :map js-ts-mode-map
-	 ("M-." . nil))
+	 ;; :map js-ts-mode-map
+	 ;; ("M-." . nil)
+         )
   :config
   (setq js-indent-level 2))
 
@@ -797,11 +803,15 @@ RET is the original return from the function."
   :ensure t
   :defer t
   :hook
-  ( ;; The following doesn't work because of
+  ( ;; The following doesn't work because of eglot:
     ;; https://github.com/orzechowskid/flymake-eslint/issues/23
     ;; (js-base-mode typescript-ts-base-mode) . flymake-eslint-enable)
    eglot-managed-mode . (lambda ()
-                          (when (derived-mode-p 'js-base-mode 'typescript-ts-base-mode)
+                          (when (derived-mode-p
+                                 ;; 'js-base-mode
+                                 'js-mode
+                                 'js-ts-mode
+                                 'typescript-ts-base-mode)
                             (flymake-eslint-enable)))))
 
 (use-package prettier-js
