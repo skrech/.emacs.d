@@ -796,6 +796,13 @@ RET is the original return from the function."
     ;; the time.
     (add-to-list 'major-mode-remap-alist '(javascript-mode . jtsx-jsx-mode))
     (add-to-list 'major-mode-remap-alist '(rjsx-mode . jtsx-jsx-mode))
+
+    ;; This entry fixes an alleged bug where the first time
+    ;; `jtsx-jsx-mode' starts, its parent mode `js-ts-mode'
+    ;; re-registers itself in `auto-mode-alist' as handling `JSX'
+    ;; files.
+    (add-to-list 'major-mode-remap-alist '(js-ts-mode . jtsx-jsx-mode))
+
     (add-to-list 'major-mode-remap-alist '(typescript-ts-mode . jtsx-typescript-mode))
     (add-to-list 'major-mode-remap-alist '(tsx-ts-mode . jtsx-tsx-mode))))
 
