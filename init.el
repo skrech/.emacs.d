@@ -56,7 +56,8 @@
         (jsdoc "https://github.com/tree-sitter/tree-sitter-jsdoc")
 	(typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
 	(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-	(yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+	;; (yaml "https://github.com/ikatyang/tree-sitter-yaml")
+        ))
 
 (defun sch/treesit-available-p (lang)
   "Check if the supplied LANG (a symbol) is available for tree-sitter."
@@ -962,12 +963,12 @@ CURRENT-PYTHON - string, currently selected python version."
   :defer t)
 
 
-;;; YAML TS (builtin)
-(use-package yaml-ts-mode
+;;; YAML
+(use-package yaml-mode
+  :ensure t
   :defer t
-  :if (sch/treesit-available-p 'yaml)
   :init
-  (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode)))
+  (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-mode)))
 
 ;;; -------------
 ;;; Styling modes
