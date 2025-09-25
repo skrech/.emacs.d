@@ -387,6 +387,10 @@ Needs Tree-Sitter to actually be available."
   :ensure t
   :after (counsel projectile)
   :config
+  ;; Workaround! Remove following line after
+  ;; https://github.com/ericdanan/counsel-projectile/issues/189 is
+  ;; closed.
+  (projectile-known-projects)
   (counsel-projectile-mode)
   :diminish)
 
