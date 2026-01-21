@@ -1000,19 +1000,7 @@ CURRENT-PYTHON - string, currently selected python version."
   :bind (("C-c o l" . org-store-link)
 	 ("C-c o a" . org-agenda)
 	 ("C-c o c" . org-capture)
-	 ("C-c o b" . org-switchb)
-         :map org-mode-map
-         ;; Free up the M-<left/right> binding to work as work
-         ;; movement command. For this to happend, whole family of
-         ;; commands need to be remapped.
-         ("M-<left>" . nil)
-         ("C-<left>" . org-metaleft)
-         ("M-S-<left>" . org-shiftcontrolleft)
-         ("C-S-<left>" . org-shiftleft)
-         ("M-<right>" . nil)
-         ("C-<right>" . org-metaright)
-         ("M-S-<right>" . org-shiftcontrolright)
-         ("C-S-<right>" . org-shiftright))
+	 ("C-c o b" . org-switchb))
   :config
   ;; Use enhanced exporter if available
   ;; (if (require 'ox-confluence-en nil t)
