@@ -57,7 +57,8 @@
 	(typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
 	(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
 	;; (yaml "https://github.com/ikatyang/tree-sitter-yaml")
-        ))
+        (go "https://github.com/tree-sitter/tree-sitter-go")
+        (gomod "https://github.com/camdencheek/tree-sitter-go-mod")))
 
 (defun sch/treesit-available-p (lang)
   "Check if the supplied LANG (a symbol) is available for tree-sitter."
