@@ -702,9 +702,9 @@ RET is the original return from the function."
 	      ("M-s" . nil)
 	      ("M-r" . nil)
 	      ("M-?" . nil)
-	      ("C-c e s" . paredit-splice-sexp)
-	      ("C-c e r" . paredit-raise-sexp)
-	      ("C-c e c" . paredit-convolute-sexp))
+	      ("C-c M-s" . paredit-splice-sexp)
+	      ("C-c M-r" . paredit-raise-sexp)
+	      ("C-c M-?" . paredit-convolute-sexp))
   :hook ((lisp-mode emacs-lisp-mode clojure-mode) . paredit-mode)
   :diminish)
 
