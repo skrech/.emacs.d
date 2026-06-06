@@ -449,6 +449,15 @@ Needs Tree-Sitter to actually be available."
   (editorconfig-mode 1)
   :diminish)
 
+;;; Reverse-IM -- allows for using command shortcuts when using
+;;; keyboard layouts different than US.
+(use-package reverse-im
+  :ensure t
+  ;; translate these methods, use M-x `list-input-methods'
+  ;; if you're not sure which one to use
+  :init
+  (setq reverse-im-input-methods '("bulgarian-alt-phonetic"))
+  (reverse-im-mode t))
 
 ;;; ----------------------------------------------
 ;;; ----------------------------------- Deferred ;
