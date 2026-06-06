@@ -217,9 +217,7 @@ Needs Tree-Sitter to actually be available."
 
 ;;; +++ Visual
   ;; Show line numbers in the fringe
-  (if (eval-when-compile (>= emacs-major-version 26))
-      (global-display-line-numbers-mode)
-    (global-linum-mode t))
+  (global-display-line-numbers-mode)
 
   ;; Show column number in modeline
   (setq column-number-mode t)
@@ -543,15 +541,14 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 ;;; +++ Kubernetes
 
 ;;; Kele
-(when (>= emacs-major-version 29)
-  (use-package kele
-    :ensure t
-    :defer t
-    :bind-keymap
-    ("C-c k" . kele-command-map)
-    :config
-    ;; Temporary force kubeconfig to the default one
-    (setq kele-kubeconfig-path "~/.kube/config")))
+(use-package kele
+  :ensure t
+  :defer t
+  :bind-keymap
+  ("C-c k" . kele-command-map)
+  :config
+  ;; Temporary force kubeconfig to the default one
+  (setq kele-kubeconfig-path "~/.kube/config"))
 
 
 ;;; +++ Efficient seraching and finding
@@ -636,16 +633,19 @@ RET is the original return from the function."
   :ensure t
   :defer t
   :config
-  (when (< emacs-major-version 30)
-    ;; `eglot' in Emacs before version 30.* doesn't have support for
-    ;; Lexical (Elixir) LSP. Add support for Lexical in that case.
-    (add-to-list 'eglot-server-programs
-		 `((elixir-ts-mode heex-ts-mode) .
-                   ,(if (and (fboundp 'w32-shell-dos-semantics)
-                             (w32-shell-dos-semantics))
-			'("language_server.bat")
-                      (eglot-alternatives
-                       '("language_server.sh" "start_lexical.sh"))))))
+  ;; Add Expert and Lexical (now deprecated) for Elixir to the
+  ;; supported LSP servers. This would be needed until Expert is
+  ;; included into the default set of server programs.
+  (setf (alist-get '(elixir-mode elixir-ts-mode heex-ts-mode)
+                   eglot-server-programs
+                   nil nil #'equal)
+        (if (and (fboundp 'w32-shell-dos-semantics)
+                 (w32-shell-dos-semantics))
+            '(("expert_windows_amd64" "--stdio"))
+          (eglot-alternatives
+           '(("expert_linux_amd64" "--stdio")
+             "language_server.sh"
+             "start_lexical.sh"))))
   :bind (:map eglot-mode-map
 	      ("C-c e f" . eglot-format))
   :hook
@@ -671,17 +671,18 @@ RET is the original return from the function."
 ;;   :hook ((text-mode org-mode markdown-mode) . electric-pair-mode))
 
 ;;; Ruby-end -- mode for handling ruby-like do..end blocks
-(use-package ruby-end
-  :ensure t
-  :defer t
-  :hook ((elixir-mode elixir-ts-mode) . sch/activate-ruby-end-mode-for-elixir)
-  :preface
-  (defun sch/activate-ruby-end-mode-for-elixir ()
-    (set (make-local-variable 'ruby-end-expand-keywords-before-re)
-         "\\(?:^\\|\\s-+\\)\\(?:do\\)")
-    (set (make-local-variable 'ruby-end-check-statement-modifiers) nil)
-    (ruby-end-mode))
-  :diminish)
+;;; DOES NOT WORK with TS modes.
+;; (use-package ruby-end
+;;   :ensure t
+;;   :defer t
+;;   :hook ((elixir-mode elixir-ts-mode) . sch/activate-ruby-end-mode-for-elixir)
+;;   :preface
+;;   (defun sch/activate-ruby-end-mode-for-elixir ()
+;;     (set (make-local-variable 'ruby-end-expand-keywords-before-re)
+;;          "\\(?:^\\|\\s-+\\)\\(?:do\\)")
+;;     (set (make-local-variable 'ruby-end-check-statement-modifiers) nil)
+;;     (ruby-end-mode))
+;;   :diminish)
 
 ;;; Smartparens -- For all modes that use complex delimiters
 ;; (use-package smartparens
@@ -756,12 +757,15 @@ RET is the original return from the function."
 ;; it's a builtin mode starting from Emacs 30, however, there is a
 ;; backported package for 29 (hence the overlap in the ranges in this
 ;; config).
-(when (>= emacs-major-version 29)
-  (use-package elixir-ts-mode
-    :ensure t
-    :defer t
-    :if (sch/treesit-available-p 'elixir)
-    :init
+(use-package elixir-ts-mode
+  :ensure t
+  :defer t
+  :if (sch/treesit-available-p 'elixir)
+  :init
+  (if (> emacs-major-version 29)
+      (progn
+        (add-to-list 'auto-mode-alist '("\\.\\(ex\\|exs\\|elixir\\)\\'" . elixir-ts-mode))
+        (add-to-list 'auto-mode-alist '("mix\\.lock" . elixir-ts-mode)))
     (add-to-list 'major-mode-remap-alist '(elixir-mode . elixir-ts-mode))))
 
 ;;; +++ Javascript/Typescript/JSX/TSX
