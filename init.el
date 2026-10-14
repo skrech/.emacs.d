@@ -569,6 +569,16 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 	 ("M-g f" . avy-goto-line)
 	 ("M-g w" . avy-goto-word-1)))
 
+;;; Agent-shell -- Runs AI agents in an inferior shell
+(use-package agent-shell
+  :ensure t
+  :defer t
+  :bind (:map agent-shell-mode-map
+              ("RET" . newline)
+              ("C-c C-c" . shell-maker-submit)
+              ("C-c C-k" . agent-shell-interrupt)
+              ("C-M-p" . agent-shell-ui-backward-block)
+              ("C-M-n" . agent-shell-ui-forward-block)))
 
 ;;; ----------------------------------------------
 ;;; Tool modes (minor modes)
