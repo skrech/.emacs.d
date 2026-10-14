@@ -22,6 +22,7 @@ customize.el
 /tree-sitter
 
 # Cache files and settings for packages
+/eca
 /eln-cache
 /transient
 /.python-environments

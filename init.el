@@ -569,6 +569,12 @@ RETURN-STRING - the string returned by `vc-git-mode-line-string'."
 	 ("M-g f" . avy-goto-line)
 	 ("M-g w" . avy-goto-word-1)))
 
+;;; ECA -- Editor Code Assistant (AI Assistant)
+(use-package eca
+  :ensure t
+  :defer t
+  :vc (:url "https://github.com/editor-code-assistant/eca-emacs" :rev :newest))
+
 ;;; Agent-shell -- Runs AI agents in an inferior shell
 (use-package agent-shell
   :ensure t
