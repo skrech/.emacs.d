@@ -687,18 +687,17 @@ RET is the original return from the function."
 ;;   :hook ((text-mode org-mode markdown-mode) . electric-pair-mode))
 
 ;;; Ruby-end -- mode for handling ruby-like do..end blocks
-;;; DOES NOT WORK with TS modes.
-;; (use-package ruby-end
-;;   :ensure t
-;;   :defer t
-;;   :hook ((elixir-mode elixir-ts-mode) . sch/activate-ruby-end-mode-for-elixir)
-;;   :preface
-;;   (defun sch/activate-ruby-end-mode-for-elixir ()
-;;     (set (make-local-variable 'ruby-end-expand-keywords-before-re)
-;;          "\\(?:^\\|\\s-+\\)\\(?:do\\)")
-;;     (set (make-local-variable 'ruby-end-check-statement-modifiers) nil)
-;;     (ruby-end-mode))
-;;   :diminish)
+(use-package ruby-end
+  :ensure t
+  :defer t
+  :hook ((elixir-mode elixir-ts-mode) . sch/activate-ruby-end-mode-for-elixir)
+  :preface
+  (defun sch/activate-ruby-end-mode-for-elixir ()
+    (set (make-local-variable 'ruby-end-expand-keywords-before-re)
+         "\\(?:^\\|\\s-+\\)\\(?:do\\)")
+    (set (make-local-variable 'ruby-end-check-statement-modifiers) nil)
+    (ruby-end-mode))
+  :diminish)
 
 ;;; Smartparens -- For all modes that use complex delimiters
 ;; (use-package smartparens
