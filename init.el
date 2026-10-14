@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration of Kristiyan Kanchev
+;;; init.el --- Emacs configuration of Kristiyan Kanchev  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;;; Emacs configuration of Kristiyan Kanchev

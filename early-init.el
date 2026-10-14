@@ -1,4 +1,4 @@
-;;; early-init.el --- Early init file
+;;; early-init.el --- Early init file  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;; Early init file executed before GUI and the package system.
