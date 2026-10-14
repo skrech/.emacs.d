@@ -305,8 +305,7 @@ Needs Tree-Sitter to actually be available."
     "Don't show `which-function' in modes that want to show it in header."
     (let ((old-construct (assq 'which-function-mode mode-line-misc-info))
 	  (misc-info (assq-delete-all 'which-function-mode mode-line-misc-info)))
-      (add-to-list 'misc-info
-		   (list 'sch/which-function-in-mode-line old-construct))
+      (push (list 'sch/which-function-in-mode-line old-construct) misc-info)
       (setq mode-line-misc-info misc-info))))
 
 ;;; Projectile
