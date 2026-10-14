@@ -960,6 +960,33 @@ CURRENT-PYTHON - string, currently selected python version."
   :hook
   (sql-mode . sqlind-minor-mode))
 
+;;; SQL editor and viewer.
+;;; Use `site-config/site-init.el' for defining `ejc-create-connection' calls.
+(use-package ejc-sql
+  :ensure t
+  :defer t
+  :preface
+  ;; Define a function for these customization since they'd invoke the
+  ;; Clojure nREPL on Emacs startup otherwise.
+  (defun sch/ejc-sql-connected ()
+    "Set the output limits of the connection just established."
+    (ejc-set-fetch-size 50)   ; number of rows to output on the screen
+    (ejc-set-max-rows 100)    ; max rows to get from the DB
+    (ejc-set-column-width-limit 50)     ; chars per column
+    (ejc-set-use-unicode t))            ; unicode grid borders
+  :bind (("C-c s b" . ejc-get-temp-editor-buffer)
+         :map ejc-command-map
+         ("d" . ejc-describe-table))
+  :hook ((sql-mode . ejc-sql-mode)
+         ;; `ejc-capf-setup' adds `ejc-capf' to the buffer local
+         ;; `completion-at-point-functions'.
+         (ejc-sql-minor-mode . ejc-capf-setup)
+         (ejc-sql-minor-mode . ejc-eldoc-setup))
+  :custom
+  (ejc-keymap-prefix (kbd "C-c s"))
+  (ejc-result-table-impl 'ejc-result-mode)
+  :config
+  (add-hook 'ejc-sql-connected-hook #'sch/ejc-sql-connected))
 
 ;;; +++ Rego
 
