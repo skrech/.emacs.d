@@ -6,7 +6,7 @@
 
 # Emacs customization files that need not be under VC
 customize.el
-/site-config/site-generic.el
+/site-config/site-init.el
 
 # Installed packages
 /elpa/
@@ -35,8 +35,10 @@ customize.el
 /history
 /ido.last*
 /places
+/projects
 /projectile-bookmarks.eld
 /projectile.cache
+/projectile-frecency.eld
 /recentf
 /semanticdb/
 /session.*
@@ -52,3 +54,4 @@ customize.el
 /company-statistics-cache.el
 /eshell/
 /network-security.data
+/agent/
